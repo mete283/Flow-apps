@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Keşfedin</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; \
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            color: #ffffff;
+            overflow: hidden;
+        }
+
+        /* Video Görünümlü Arka Plan Görseli */
+        .ambient-background {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            transform: scale(1.1);
+            filter: blur(8px) brightness(0.3);
+            z-index: 1;
+            transition: transform 3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Ana Sahne Taşıyıcı (Telefon Ölçeğinde Sınırlandırılmış Alan) */
+        .stage {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            margin: 0 auto;
+            background: rgba(0, 0, 0, 0.6);
+            border-left: 1px solid rgba(255, 255, 255, 0.05);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            z-index: 5;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Üst Durum Çizgisi (Hikaye İlerleme Barları) */
+        .progress-container {
+            position: absolute;
+            top: 25px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            gap: 6px;
+            z-index: 10;
+        }
+
+        .progress-bar {
+            height: 3px;
+            flex: 1;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #00f2fe, #0072ff);
+        }
+
+        .progress-fill.active {
+            width: 100%;
+            transition: width 3.5s linear;
+        }
+
+        .progress-fill.completed {
+            width: 100%;
+        }
+
+        /* -----------------------------------------------------------
+           SİNEMATİK SAHNE YAPISI
+           ----------------------------------------------------------- */
+        .scene {
+            position: absolute;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(50px) scale(0.85);
+            filter: blur(10px);
+            transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Aktif Sahne Durumu (Giriş ve Odaklanma Animasyonu) */
+        .scene.active {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0) scale(1);
+            filter: blur(0px);
+        }
+
+        /* Geçmiş Sahne Durumu (Yukarı Kayarak ve Büyüyerek Çıkış) */
+        .scene.exit {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(-60px) scale(1.1);
+            filter: blur(15px);
+        }
+
+        /* Sahne İçi Logolar ve İkonlar */
+        .scene-icon {
+            width: 85px;
+            height: 85px;
+            border-radius: 26px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .scene-icon::after {
+            content: '';
+            position: absolute;
+            inset: -1px;
+            border-radius: 26px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            pointer-events: none;
+        }
+
+        .scene-icon svg {
+            width: 42px;
+            height: 42px;
+            fill: #ffffff;
+        }
+
+        /* Sahne Metinleri */
+        .scene-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        .scene-title span {
+            background: linear-gradient(135deg, #00f2fe 0%, #0072ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .scene-desc {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.6);
+            line-height: 1.6;
+            padding: 0 15px;
+            font-weight: 400;
+        }
+
+        /* -----------------------------------------------------------
+           SAHNELERE ÖZGÜ RENKLER (Liquid Tasarım İle Uyumlu)
+           ----------------------------------------------------------- */
+        .bg-flow { background: linear-gradient(135deg, #00f2fe 0%, #0072ff 100%); box-shadow: 0 15px 40px rgba(0, 114, 255, 0.4); }
+        .bg-gemini { background: linear-gradient(135deg, #9B72CB 0%, #4285F4 100%); box-shadow: 0 15px 40px rgba(66, 133, 244, 0.4); }
+        .bg-aod { background: linear-gradient(135deg, #333333 0%, #111111 100%); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); }
+        .bg-store { background: linear-gradient(135deg, #ff9966 0%, #ff5e62 100%); box-shadow: 0 15px 40px rgba(255, 94, 98, 0.4); }
+        .bg-recovery { background: linear-gradient(135deg, #ea00d9 0%, #711c91 100%); box-shadow: 0 15px 40px rgba(113, 28, 145, 0.4); }
+        .bg-secure { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); box-shadow: 0 15px 40px rgba(56, 239, 125, 0.4); }
+
+        /* Kapat / Atla Butonu */
+        .skip-btn {
+            position: absolute;
+            bottom: 40px;
+            padding: 14px 36px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-size: 0.9rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-decoration: none;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            z-index: 10;
+            opacity: 0;
+            animation: fadeInButton 1s ease forwards 0.5s;
+        }
+
+        .skip-btn:active {
+            transform: scale(0.95);
+            background: #ffffff;
+            color: #000000;
+        }
+
+        @keyframes fadeInButton {
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="ambient-background" id="ambientBg"></div>
+
+    <div class="stage">
+        
+        <div class="progress-container" id="progressContainer"></div>
+
+        <div class="scene active" data-index="0">
+            <div class="scene-icon bg-flow">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2L2 22h20L12 2zm0 3.99L19.53 19H4.47L12 5.99z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Flow <span>AiOS</span>'a<br>Hoş Geldiniz</h2>
+            <p class="scene-desc">Gelişmiş yapay zeka entegrasyonu ve akışkan arayüz elementleriyle donatılmış yeni nesil mobil işletim sistemi deneyimi.</p>
+        </div>
+
+        <div class="scene" data-index="1">
+            <div class="scene-icon bg-gemini">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 3c.33 0 .62.22.71.53l1.52 5.24 5.24 1.52c.31.09.53.38.53.71s-.22.62-.53.71l-5.24 1.52-1.52 5.24c-.09.31-.38.53-.71.53s-.62-.22-.71-.53l-1.52-5.24-5.24-1.52C4.22 13 4 12.71 4 12.38s.22-.62.53-.71l5.24-1.52 1.52-5.24c.09-.31.38-.53.71-.53z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Yerleşik <span>Gemini AI</span><br>Asistanı</h2>
+            <p class="scene-desc">Sistemle tam entegre çalışan akıllı asistan sayesinde kodlama, tasarım ve günlük görevlerinizde anında yanıtlar alın.</p>
+        </div>
+
+        <div class="scene" data-index="2">
+            <div class="scene-icon bg-aod">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Gelişmiş <span>AOD</span> ve<br>Kilit Ekranı</h2>
+            <p class="scene-desc">AMOLED siyahıyla harmanlanmış Always-On Display ve pürüzsüz yukarı kaydırma hareketleriyle uyanan kilit katmanı.</p>
+        </div>
+
+        <div class="scene" data-index="3">
+            <div class="scene-icon bg-store">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 6h-2c0-2.76-2.24-5-5-5S7 3.24 7 6H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-7-3c1.66 0 3 1.34 3 3H9c0-1.66 1.34-3 3-3z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Akıcı Uygulama<br><span>Yönetimi</span></h2>
+            <p class="scene-desc">App Flash ve Flow Store üzerinden yeni modülleri tek tıkla sisteme dahil edin, sallanma modunda basılı tutarak güvenle silin.</p>
+        </div>
+
+        <div class="scene" data-index="4">
+            <div class="scene-icon bg-recovery">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5h2v2h-2v-2zm0-8h2v6h-2V7z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Gelişmiş Sistem<br><span>Kurtarma</span> Modu</h2>
+            <p class="scene-desc">Olası arıza durumlarında devreye giren gerçekçi Android No Command arayüzü ve akıllı donanım kurtarma protokolleri.</p>
+        </div>
+
+        <div class="scene" data-index="5">
+            <div class="scene-icon bg-secure">
+                <svg viewBox="0 0 24 24">
+                    <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-.2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+                </svg>
+            </div>
+            <h2 class="scene-title">Üst Düzey<br><span>Güvenlik</span> Mimarisi</h2>
+            <p class="scene-desc">Sistem çekirdeğini koruyan kriptografik kilit yapıları ve biyometrik doğrulama animasyon simülasyonları.</p>
+        </div>
+
+        <a href="anaekran.html" class="skip-btn" id="actionBtn">Sistemi Başlat</a>
+
+    </div>
+
+    <script>
+        const scenes = document.querySelectorAll('.scene');
+        const progressContainer = document.getElementById('progressContainer');
+        const ambientBg = document.getElementById('ambientBg');
+        const actionBtn = document.getElementById('actionBtn');
+        
+        let currentSceneIndex = 0;
+        const sceneDuration = 3500; // Her özelliğin ekranda kalma süresi (3.5 Saniye)
+        let sceneInterval;
+
+        // 1. Üst Kısımdaki İlerleme Barlarını Dinamik Oluşturma
+        scenes.forEach((_, idx) => {
+            const bar = document.createElement('div');
+            bar.className = 'progress-bar';
+            const fill = document.createElement('div');
+            fill.className = 'progress-fill';
+            fill.id = `fill-${idx}`;
+            bar.appendChild(fill);
+            progressContainer.appendChild(bar);
+        });
+
+        // 2. Sahne Değiştirme ve Zoom Tetikleme Fonksiyonu
+        function updateScenes() {
+            scenes.forEach((scene, index) => {
+                const fill = document.getElementById(`fill-${index}`);
+                
+                if (index === currentSceneIndex) {
+                    // Aktif sahneye geçiş ve yakınlaşma tetiklemesi
+                    scene.className = 'scene active';
+                    if(fill) {
+                        fill.className = 'progress-fill active';
+                    }
+                    
+                    // Arka planda hafif ritmik bir video zoom etkisi yarat
+                    ambientBg.style.transform = `scale(${1.1 + (index * 0.03)}) rotate(${index * 1}deg)`;
+                } else if (index < currentSceneIndex) {
+                    // Geçmiş sahne (Yukarı fırlayarak kaybolma)
+                    scene.className = 'scene exit';
+                    if(fill) {
+                        fill.className = 'progress-fill completed';
+                    }
+                } else {
+                    // Gelecek sahne (Aşağıda bekleyen)
+                    scene.className = 'scene';
+                    if(fill) {
+                        fill.className = 'progress-fill';
+                    }
+                }
+            });
+
+            // Son sahneye gelindiğinde butonu daha vurgulu hale getir
+            if (currentSceneIndex === scenes.length - 1) {
+                actionBtn.innerText = "Keşfetmeye Başla";
+                actionBtn.style.background = "linear-gradient(135deg, #00f2fe, #0072ff)";
+                actionBtn.style.color = "#ffffff";
+                actionBtn.style.border = "none";
+                actionBtn.style.boxShadow = "0 10px 25px rgba(0, 114, 255, 0.4)";
+                clearInterval(sceneInterval); // Son sahnede döngüyü durdur, kullanıcı tıklayana kadar kalsın
+            }
+        }
+
+        // 3. Zamanlayıcı Döngüsü (Otomatik Akış)
+        function startPresentation() {
+            // İlk sahne barını doldurmaya başla
+            setTimeout(() => {
+                const firstFill = document.getElementById('fill-0');
+                if(firstFill) firstFill.classList.add('active');
+            }, 50);
+
+            sceneInterval = setInterval(() => {
+                if (currentSceneIndex < scenes.length - 1) {
+                    currentSceneIndex++;
+                    updateScenes();
+                }
+            }, sceneDuration);
+        }
+
+        // Başlat
+        window.addEventListener('DOMContentLoaded', startPresentation);
+    </script>
+</body>
+</html>

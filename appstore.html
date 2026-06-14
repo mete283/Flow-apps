@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow Store</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #060609;
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 25px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 🌊 AKIŞKAN BEYAZ LİKİT CAM ARKA PLAN EFFECTS */
+        .liquid-bg {
+            position: fixed;
+            top: -40%;
+            left: -40%;
+            width: 180%;
+            height: 180%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.06) 0%, rgba(15, 23, 42, 0.4) 40%, #030712 80%);
+            z-index: -1;
+            filter: blur(60px);
+            animation: liquidMove 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes liquidMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(5%, 8%) rotate(10deg); }
+        }
+
+        /* ÜST BAR */
+        .store-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 18px;
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            transition: all 0.2s;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .back-btn:active { transform: scale(0.95); }
+
+        .store-title h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .store-title p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-top: 2px;
+        }
+
+        /* MAĞAZA UYGULAMA LİSTESİ */
+        .apps-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* ⚪ WHITE LIQUID GLASS KART YAPISI */
+        .app-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 22px;
+            padding: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(25px) saturate(120%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .app-card:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 20px 40px rgba(255, 255, 255, 0.02), 0 15px 35px rgba(0, 0, 0, 0.4);
+        }
+
+        .app-info-block {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        /* EMOJISİZ PREMIUM HARF SİMGESİ YAPISI */
+        .app-store-icon {
+            width: 54px;
+            height: 54px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.01) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+            box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.1);
+        }
+
+        .app-details h2 {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+
+        .app-details p {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.3;
+        }
+
+        /* SAĞ KONTROL ALANI (BUTON / PROGRESS) */
+        .action-area {
+            position: relative;
+            min-width: 90px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* PREMIUM AKSİYON BUTONLARI */
+        .store-btn {
+            border: none;
+            padding: 11px 24px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.1, 0.9, 0.2, 1);
+            width: 100%;
+            text-align: center;
+        }
+
+        /* İndir Butonu - White Liquid Cam Uyumlu Saf Neon */
+        .btn-download {
+            background: #ffffff;
+            color: #060609;
+            box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-download:active {
+            transform: scale(0.93);
+        }
+
+        /* Aç Butonu - Soft Buzlu Cam */
+        .btn-open {
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .btn-open:active {
+            transform: scale(0.93);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* ⏳ %1-100 LİKİT SAYACLI YÜKLEME ÇEMBERİ */
+        .progress-wrapper {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            width: 44px;
+            height: 44px;
+        }
+
+        .progress-svg {
+            transform: rotate(-90deg);
+            width: 44px;
+            height: 44px;
+        }
+
+        .progress-bg-circle {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 3.5;
+        }
+
+        .progress-bar-circle {
+            fill: none;
+            stroke: #4cc9f0; /* Neon Mavi Yükleme Çizgisi */
+            stroke-width: 3.5;
+            stroke-dasharray: 113;
+            stroke-dashoffset: 113;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.05s linear;
+        }
+
+        .progress-text {
+            position: absolute;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #4cc9f0;
+            font-variant-numeric: tabular-nums;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg"></div>
+
+    <div class="store-header">
+        <button class="back-btn" onclick="location.href='anaekran.html'">←</button>
+        <div class="store-title">
+            <h1>App Store</h1>
+            <p></p>
+        </div>
+    </div>
+
+    <div class="apps-list" id="storeAppsContainer"></div>
+
+    <script>
+        // 🛍️ STORE VERİTABANI - EMOJİSİZ / TEK HARF KODLU SİMGELER
+        const storeDatabase = [
+            {
+                signature: "com.google.web",
+                name: "Google",
+                letter: "G", // Emoji yerine kullanılacak harf simgesi
+                url: "https://www.google.com",
+                desc: "Dünyanın en gelişmiş arama motoru."
+            },
+            {
+                signature: "com.youtube.web",
+                name: "YouTube",
+                letter: "Y",
+                url: "https://www.youtube.com",
+                desc: "Küresel video ve canlı yayın ekosistemi."
+            },
+                {
+                signature: "https://instagram.com",
+                name: "Instagram",
+                letter: "İ",
+                url: "https://instagram.com",
+                desc: ""
+            },
+            {
+                signature: "https://tiktok.com",
+                name: "TikTok",
+                letter: "T",
+                url: "https://tiktok.com",
+                desc: ""
+            },  
+            {
+                signature: "https://mete283.github.io/sohbet/newindex.html",
+                name: "𝓣𝓲𝓸 - 𝓦",
+                letter: "T",
+                url: "https://mete283.github.io/sohbet/newindex.html",
+                desc: ""
+            },  
+            {
+                signature: "com.github.web",
+                name: "GitHub",
+                letter: "H",
+                url: "https://github.com",
+                desc: "Geliştiriciler için açık kaynak kod merkezi."
+            }
+        ];
+
+        // 🔄 MAĞAZA ARAYÜZÜNÜ OLUŞTURMA MOTORU
+        function renderStore() {
+            const container = document.getElementById('storeAppsContainer');
+            container.innerHTML = '';
+
+            const installedApps = JSON.parse(localStorage.getItem('installedApps')) || [];
+
+            storeDatabase.forEach(app => {
+                const isInstalled = installedApps.some(item => item.signature === app.signature);
+
+                const card = document.createElement('div');
+                card.className = 'app-card';
+                
+                card.innerHTML = `
+                    <div class="app-info-block">
+                        <div class="app-store-icon">${app.letter}</div>
+                        <div class="app-details">
+                            <h2>${app.name}</h2>
+                            <p>${app.desc}</p>
+                        </div>
+                    </div>
+                    <div class="action-area" id="area-${app.signature}">
+                        ${isInstalled ? 
+                            `<button class="store-btn btn-open" onclick="launchApp('${app.signature}')">Aç</button>` : 
+                            `<button class="store-btn btn-download" onclick="startDownloadAnimation('${app.signature}')">İndir</button>`
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(card);
+            });
+        }
+
+        // ⏳ %1'DEN %100'E KADAR GERÇEKÇİ SAYAÇ VE YÜKLEME ANİMASYONU
+        function startDownloadAnimation(signature) {
+            const area = document.getElementById(`area-${signature}`);
+            
+            // Butonu gizleyip çembersel sayacı yerleştiriyoruz
+            area.innerHTML = `
+                <div class="progress-wrapper" style="display: flex;">
+                    <svg class="progress-svg">
+                        <circle class="progress-bg-circle" cx="22" cy="22" r="18"></circle>
+                        <circle class="progress-bar-circle" id="circle-${signature}" cx="22" cy="22" r="18"></circle>
+                    </svg>
+                    <span class="progress-text" id="text-${signature}">0%</span>
+                </div>
+            `;
+
+            const circle = document.getElementById(`circle-${signature}`);
+            const text = document.getElementById(`text-${signature}`);
+            
+            let progress = 0;
+            const circleLength = 113; // 2 * PI * r (2 * 3.1415 * 18)
+
+            // Akışkan ve ritmik bir artış simülasyonu
+            const interval = setInterval(() => {
+                // Rastgele küçük adımlarla artış sağlayarak daha organik bir yükleme hissi verir
+                progress += Math.floor(Math.random() * 3) + 1; 
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Yükleme bittiğinde kalıcı kaydı yap ve butonu "Aç" durumuna getir
+                    finalizeInstallation(signature);
+                }
+
+                // Sayaç metnini güncelle
+                text.innerText = `${progress}%`;
+                
+                // SVG Çember çizgisini yüzdeye göre doldur
+                const offset = circleLength - (progress / 100) * circleLength;
+                circle.style.strokeDashoffset = offset;
+            }, 45); // Yaklaşık 2-3 saniye süren akıcı sayaç hızı
+        }
+
+        // 📥 KURULUMU TAMAMLAYIP LOCALSTORAGE'A GÖMME MOTORU
+        function finalizeInstallation(signature) {
+            let installedApps = JSON.parse(localStorage.getItem('installedApps')) || [];
+            const appData = storeDatabase.find(item => item.signature === signature);
+
+            if (!appData) return;
+
+            const newInstalledApp = {
+                id: 'store_app_' + Date.now(),
+                signature: appData.signature,
+                name: appData.name,
+                icon: appData.letter, // Ana ekranda da harf simgesi gözükecek
+                url: appData.url,
+                isStoreApp: true
+            };
+
+            installedApps.push(newInstalledApp);
+            localStorage.setItem('installedApps', JSON.stringify(installedApps));
+            
+            // Arayüzü güncelle (Buton Aç moduna dönecektir)
+            renderStore();
+        }
+
+        // 🚀 UYGULAMA AÇILMA EMİR SİSTEMİ
+        function launchApp(signature) {
+            const appData = storeDatabase.find(item => item.signature === signature);
+            if (!appData) return;
+            
+            localStorage.setItem('launch_target_app', JSON.stringify(appData));
+            location.href = 'anaekran.html';
+        }
+
+        window.addEventListener('DOMContentLoaded', renderStore);
+    </script>
+</body>
+</html>

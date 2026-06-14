@@ -1,0 +1,15 @@
+{
+  "manifest_name": "Flow AiOS Performance Profile",
+  "version": "2.0",
+  "optimization_targets": {
+    "rendering_engine": "hardware_accelerated",
+    "fallback_strategy": "glass_to_translucent_rgba",
+    "scroll_behavior": "passive_debounced",
+    "layer_splitting": true
+  },
+  "hardware_limits": {
+    "low_end_device_fps_floor": 45,
+    "max_compositing_layers": 32,
+    "cache_dom_queries": true
+  }
+}

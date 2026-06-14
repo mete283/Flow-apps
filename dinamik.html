@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flow AiOS - Island Studio Ultra</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #ffffff;
+        }
+
+        body {
+            background: #07070a;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            position: relative;
+        }
+
+        /* GERİ DÖN OK BUTONU */
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
+        }
+
+        .config-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 24px;
+            padding: 25px;
+            width: 100%;
+            max-width: 460px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            margin-top: 50px;
+        }
+
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, #fff 0%, #a5a5a5 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.4);
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255, 255, 255, 0.3);
+            margin: 20px 0 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 6px;
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+        }
+
+        .setting-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .setting-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .setting-desc {
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.4);
+        }
+
+        /* TOGGLE SWITCH */
+        .switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+        }
+
+        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .slider {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: rgba(255, 255, 255, 0.1);
+            transition: .3s cubic-bezier(0.19, 1, 0.22, 1);
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px; width: 18px;
+            left: 3px; bottom: 3px;
+            background-color: white;
+            transition: .3s cubic-bezier(0.19, 1, 0.22, 1);
+            border-radius: 50%;
+        }
+
+        input:checked + .slider { background-color: #007aff; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* SELECT / SLIDER CONTROLS */
+        .custom-select {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+        .custom-select option { background: #07070a; }
+
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 50%;
+        }
+
+        .custom-range {
+            width: 100%;
+            accent-color: #007aff;
+            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .range-val {
+            font-size: 0.8rem;
+            font-family: monospace;
+            min-width: 35px;
+            text-align: right;
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* TEXT INPUTS */
+        .text-input {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            outline: none;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .text-input:focus {
+            border-color: rgba(0, 122, 255, 0.5);
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .save-banner {
+            margin-top: 20px;
+            background: rgba(76, 217, 100, 0.1);
+            border: 1px solid rgba(76, 217, 100, 0.2);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: #4cd964;
+            text-align: center;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <a href="anaekran.html" class="back-btn">✕</a>
+
+    <div class="config-card">
+        <div class="header">
+            <h1>Flow Island</h1>
+            <p></p>
+        </div>
+
+        <div class="section-title">Görünürlük & Davranış</div>
+        
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Adayı Aktifleştir</span>
+                <span class="setting-desc">Dinamik adayı tamamen açar veya kapatır.</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="visible" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Açılışta Bilgi Ver</span>
+                <span class="setting-desc">Sistem ilk açıldığında otomatik selamlar.</span>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="openOnStartup" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="section-title">Aydınlatma & Görsel Mod</div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Ada Teması</span>
+                <span class="setting-desc">Dinamik adanın arka plan stilini belirler.</span>
+            </div>
+            <select id="visualMode" class="custom-select">
+                <option value="pure">Saf AMOLED Siyahı</option>
+                <option value="blur">Motion Glass Blur</option>
+            </select>
+        </div>
+
+        <div class="section-title">Geometri & Animasyon</div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Üst Boşluk (Yükseklik)</span>
+                <span class="setting-desc">Adanın tepeden uzaklığı</span>
+            </div>
+            <div class="range-container">
+                <input type="range" id="topPos" class="custom-range" min="5" max="60" value="15">
+                <span class="range-val" id="topPosVal">15px</span>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Ada Ölçeği (Boyut)</span>
+                <span class="setting-desc">Genel büyüklük oranı</span>
+            </div>
+            <div class="range-container">
+                <input type="range" id="scale" class="custom-range" min="80" max="130" value="100">
+                <span class="range-val" id="scaleVal">%100</span>
+            </div>
+        </div>
+
+        <div class="setting-row">
+            <div class="setting-info">
+                <span class="setting-title">Geçiş Süresi</span>
+                <span class="setting-desc">Açılış ve kapanış hızı</span>
+            </div>
+            <div class="range-container">
+                <input type="range" id="duration" class="custom-range" min="2" max="10" value="5">
+                <span class="range-val" id="durationVal">0.5s</span>
+            </div>
+        </div>
+
+        <div class="section-title">Yörünge Ada Yazısı</div>
+        <div style="padding: 4px 0 10px 0;">
+            <div class="setting-info" style="margin-bottom: 8px;">
+                <span class="setting-title">Özel Ada İçeriği Metni</span>
+                <span class="setting-desc">Boş bırakırsanız sistem durumları (Saat, Güvenlik vb.) otomatik akar. Girdiğiniz her özel metin için Yeşil Neon Işık parlar.</span>
+            </div>
+            <input type="text" id="customText" class="text-input" placeholder="Adaya özel bir şey fısıldayın...">
+        </div>
+
+        <div class="save-banner" id="saveBanner">
+            ✓ Ayarlar senkronize edildi ve kaydedildi!
+        </div>
+    </div>
+
+    <script>
+        const storageKey = 'flowIslandSettings';
+
+        // Varsayılan Kalıp
+        const defaultSettings = {
+            visible: true,
+            openOnStartup: true,
+            visualMode: 'pure',
+            topPos: 15,
+            scale: 100,
+            duration: 5,
+            customText: ""
+        };
+
+        function getSettings() {
+            let settings = JSON.parse(localStorage.getItem(storageKey));
+            if (!settings) {
+                settings = defaultSettings;
+                localStorage.setItem(storageKey, JSON.stringify(settings));
+            }
+            return { ...defaultSettings, ...settings };
+        }
+
+        function loadUiWithSettings() {
+            const config = getSettings();
+            
+            document.getElementById('visible').checked = config.visible;
+            document.getElementById('openOnStartup').checked = config.openOnStartup;
+            document.getElementById('visualMode').value = config.visualMode;
+            
+            document.getElementById('topPos').value = config.topPos;
+            document.getElementById('topPosVal').innerText = config.topPos + 'px';
+            
+            document.getElementById('scale').value = config.scale;
+            document.getElementById('scaleVal').innerText = '%' + config.scale;
+            
+            document.getElementById('duration').value = config.duration;
+            document.getElementById('durationVal').innerText = (config.duration / 10) + 's';
+            
+            document.getElementById('customText').value = config.customText || "";
+        }
+
+        function saveSettings() {
+            const currentConfig = {
+                visible: document.getElementById('visible').checked,
+                openOnStartup: document.getElementById('openOnStartup').checked,
+                visualMode: document.getElementById('visualMode').value,
+                topPos: parseInt(document.getElementById('topPos').value),
+                scale: parseInt(document.getElementById('scale').value),
+                duration: parseInt(document.getElementById('duration').value),
+                customText: document.getElementById('customText').value
+            };
+
+            localStorage.setItem(storageKey, JSON.stringify(currentConfig));
+
+            // Kayıt bildirim animasyonu
+            const banner = document.getElementById('saveBanner');
+            banner.style.display = 'block';
+            setTimeout(() => { banner.style.display = 'none'; }, 2000);
+        }
+
+        // Dinamik slider değer göstergeleri ve otomatik kayıt tetikleyiciler
+        document.querySelectorAll('.custom-range').forEach(item => {
+            item.addEventListener('input', (e) => {
+                if(e.target.id === 'topPos') document.getElementById('topPosVal').innerText = e.target.value + 'px';
+                if(e.target.id === 'scale') document.getElementById('scaleVal').innerText = '%' + e.target.value;
+                if(e.target.id === 'duration') document.getElementById('durationVal').innerText = (e.target.value / 10) + 's';
+                saveSettings();
+            });
+        });
+
+        document.querySelectorAll('input[type="checkbox"], select').forEach(element => {
+            element.addEventListener('change', saveSettings);
+        });
+
+        document.getElementById('customText').addEventListener('input', saveSettings);
+
+        // İLETİŞİM MOTORU VE ZEKA KATMANI (anaekran.html ile konuşan kısım)
+        window.addEventListener("message", (event) => {
+            if (event.data && event.data.type === "REQUEST_AI_INSIGHT") {
+                const requestedMode = event.data.mode;
+                const userConfig = getSettings(); 
+                let responseData = {};
+                
+                const now = new Date();
+                const timeString = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+                if (requestedMode === "welcome") {
+                    // İlk açılış: MAVİ - MOR neon hafif aydınlatma
+                    responseData = { 
+                        html: ` <b>Flow AI:</b> <b>Merhaba</b>`,
+                        glowType: "welcome" 
+                    };
+                } else {
+                    if (userConfig.customText && userConfig.customText.trim() !== "") {
+                        // Özel Yazı girildiyse: YEŞİL aydınlatma
+                        responseData = { 
+                            html: ` <b>User Text:</b> ${userConfig.customText}`,
+                            glowType: "custom"
+                        };
+                    } else {
+                        const randomFactor = now.getSeconds() % 3;
+                        if (randomFactor === 0) {
+                            // Sistem Kontrolü: MOR aydınlatma
+                            responseData = { 
+                                html: ` <b>Sistem:</b> optimize çalışıyor.`, 
+                                glowType: "system" 
+                            };
+                        } else if (randomFactor === 1) {
+                            // Güvenlik Analizi: KIRMIZI/PEMBE aydınlatma
+                            responseData = { 
+                                html: ` <b>Kullanıcı Arayüzü:</b> Flow AiOS`, 
+                                glowType: "security" 
+                            };
+                        } else {
+                            // Saat / Zaman Bildirimi: TURUNCU/SARI aydınlatma
+                            responseData = { 
+                                html: ` <b>Zaman Bildirimi:</b> Saat şu an <b>${timeString}</b>`, 
+                                glowType: "time" 
+                            };
+                        }
+                    }
+                }
+
+                // Bilgiyi parent'a (anaekran.html) uçur
+                window.parent.postMessage({ type: "AI_INSIGHT_RESPONSE", data: responseData }, "*");
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', loadUiWithSettings);
+    </script>
+</body>
+</html>

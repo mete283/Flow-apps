@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - İpuçları</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            position: relative;
+        }
+
+        /* ÜST BAR VE GERİ DÖNÜŞ BUTONU */
+        .top-bar {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            z-index: 10;
+        }
+
+        .back-btn {
+            width: 45px;
+            height: 45px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.12);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .back-btn:active {
+            transform: scale(0.9);
+        }
+
+        .page-title {
+            color: #ffffff;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        }
+
+        /* İPUÇLARI İÇERİK ALANI */
+        .tips-container {
+            position: absolute;
+            top: 85px;
+            left: 20px;
+            right: 20px;
+            bottom: 30px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding-bottom: 20px;
+        }
+
+        /* Kaydırma çubuğunu gizle */
+        .tips-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        /* PREMIUM LIQUID GLASS KART TASARIMI */
+        .tip-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.14) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(20px) saturate(140%);
+            -webkit-backdrop-filter: blur(20px) saturate(140%);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            border-radius: 24px;
+            padding: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.15);
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+        }
+
+        /* Kart İçi İkon Yapısı */
+        .tip-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .tip-icon-wrapper svg {
+            width: 24px;
+            height: 24px;
+            fill: #ffffff;
+        }
+
+        /* Kart Metin Alanları */
+        .tip-info {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .tip-heading {
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .tip-text {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.85rem;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Üst Kontrol Paneli -->
+    <div class="top-bar">
+        <div class="back-btn" onclick="window.location.href='anaekran.html'" title="Geri Dön">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 19L8 12L15 5" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </div>
+        <div class="page-title">Sistem İpuçları</div>
+    </div>
+
+    <!-- İpuçları Kart Listesi -->
+    <div class="tips-container">
+
+        <!-- İpucu 1 -->
+        <div class="tip-card">
+            <div class="tip-icon-wrapper">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                    <path d="M12 16V12" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 8H12.01" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </div>
+            <div class="tip-info">
+                <div class="tip-heading">Uygulama Düzenleme Modu</div>
+                <div class="tip-text">App Flash üzerinden kurduğun özel uygulamaları silmek veya sallantı modunu açmak için ikonların üzerine uzun süre basılı tutman veya sağ tıklaman yeterlidir.</div>
+            </div>
+        </div>
+
+        <!-- İpucu 2 -->
+        <div class="tip-card">
+            <div class="tip-icon-wrapper">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.25z"/>
+                </svg>
+            </div>
+            <div class="tip-info">
+                <div class="tip-heading">Hızlı Kapatma</div>
+                <div class="tip-text">Düzenleme (sallanma) modundan anında çıkmak için ekrandaki boş bir duvar kağıdı alanına bir kez dokunman yeterlidir.</div>
+            </div>
+        </div>
+
+        
+        <!-- İpucu 3 -->
+        <div class="tip-card">
+            <div class="tip-icon-wrapper">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+            </div>
+            <div class="tip-info">
+                <div class="tip-heading">Liquid Glass Teknolojisi</div>
+                <div class="tip-text">Arayüzdeki tüm paneller ve alt dock alanı, dinamik arka plan doymuşluğu (saturate) ve yüksek bulanıklık performansı kullanan gelişmiş cam efektiyle optimize edilmiştir.</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Gemini AI</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Arka Plan Karartma Katmanı */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            z-index: 1;
+        }
+
+        /* Ana Arayüz Container (Liquid Glass Pencere) */
+        .chat-window {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            max-width: 480px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(35px) saturate(160%);
+            -webkit-backdrop-filter: blur(35px) saturate(160%);
+            border-left: 1px solid rgba(255, 255, 255, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 5;
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Üst Bar (Header) - Liquid Glass */
+        .chat-header {
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Geri Butonu */
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            transition: background 0.2s;
+        }
+
+        .back-btn:active {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .header-title {
+            color: #ffffff;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .header-status {
+            font-size: 0.65rem;
+            color: rgba(255, 255, 255, 0.55);
+            font-weight: 500;
+            margin-top: 1px;
+        }
+
+        /* Merkezdeki Bağlantı Kartı */
+        .launch-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+            text-align: center;
+        }
+
+        /* Büyük Parlayan Yıldız Logosu - Güncellendi */
+        .gemini-logo-large {
+            width: 110px; /* Biraz daha genişletildi */
+            height: 110px;
+            border-radius: 32px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.03) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2), inset 0 1px 2px rgba(255,255,255,0.2);
+            margin-bottom: 24px;
+            animation: pulseGlow 3s infinite alternate ease-in-out;
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2); transform: scale(1); }
+            100% { box-shadow: 0 15px 40px rgba(255, 255, 255, 0.15); transform: scale(1.02); }
+        }
+
+        .main-title {
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.3px;
+        }
+
+        .main-desc {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-width: 280px;
+            margin-bottom: 35px;
+        }
+
+        /* Premium Liquid Glass Başlatma Butonu */
+        .launch-btn {
+            width: 100%;
+            max-width: 280px;
+            height: 54px;
+            border-radius: 27px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.06) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255,255,255,0.3);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .launch-btn:active {
+            transform: scale(0.95);
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+        }
+
+        .launch-btn svg {
+            fill: #ffffff;
+            width: 18px;
+            height: 18px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="overlay"></div>
+
+    <div class="chat-window">
+        
+        <!-- ÜST HEADER -->
+        <div class="chat-header">
+            <div class="header-left">
+                <div class="back-btn" onclick="window.location.href='anaekran.html'">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </div>
+                <div>
+                    <div class="header-title">Gemini AI</div>
+                    <div class="header-status">Flow OS Entegrasyonu</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- BAŞLATMA EKRANI İÇERİĞİ -->
+        <div class="launch-container">
+            
+            <!-- Yıldız Ortalandı ve Boyutu Büyütüldü -->
+            <div class="gemini-logo-large">
+                <svg width="60" height="60" viewBox="0 0 24 24" style="fill: #ffffff; display: block;">
+                    <path d="M12 2c.4 0 .7.3.8.7l2.2 6.3 6.3 2.2c.4.1.7.4.7.8s-.3.7-.7.8l-6.3 2.2-2.2 6.3c-.1.4-.4.7-.8.7s-.7-.3-.8-.7l-2.2-6.3-6.3-2.2c-.4-.1-.7-.4-.7-.8s.3-.7.7-.8l6.3-2.2 2.2-6.3c.1-.4.4-.7.8-.7z"/>
+                </svg>
+            </div>
+
+            <h1 class="main-title">Gemini AI</h1>
+            <p class="main-desc">Flow AiOS sistem güvenliğiyle optimize edilmiş resmi yapay zekâ modeline bağlanın.</p>
+
+            <button class="launch-btn" onclick="window.open('https://gemini.google.com', '_blank')">
+                <span>Sistemi Başlat</span>
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                </svg>
+            </button>
+
+        </div>
+
+    </div>
+
+</body>
+</html>

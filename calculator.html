@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Flow Cloudculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; user-select: none; -webkit-tap-highlight-color: transparent; }
+        
+        html, body {
+            width: 100%; height: 100%; overflow: hidden;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            position: relative;
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        /* GERİ DÖNÜŞ OKU */
+        .back-zone {
+            position: absolute; top: 25px; left: 25px; z-index: 100;
+        }
+        .liquid-arrow {
+            width: 40px; height: 40px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .liquid-arrow:active { transform: scale(0.9); background: rgba(255,255,255,0.2); }
+
+        /* ANA HESAP MAKİNESİ PANELİ (LIQUID GLASS) */
+        .calc-container {
+            width: 90%; max-width: 380px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 32px;
+            backdrop-filter: blur(35px) saturate(140%);
+            -webkit-backdrop-filter: blur(35px) saturate(140%);
+            padding: 24px;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25), inset 0 1px 2px rgba(255,255,255,0.2);
+            display: flex; flex-direction: column; gap: 20px;
+            z-index: 10; transition: all 0.4s ease;
+        }
+
+        /* EKRAN ALANI */
+        .calc-screen {
+            display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-end;
+            padding: 10px 14px; min-height: 110px;
+            background: rgba(0, 0, 0, 0.15); border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.15);
+            word-wrap: break-word; word-break: break-all; overflow: hidden;
+        }
+        .screen-history { font-size: 0.95rem; color: rgba(255,255,255,0.4); font-weight: 400; min-height: 22px; }
+        .screen-current { font-size: 2.3rem; color: #fff; font-weight: 600; margin-top: 4px; transition: font-size 0.15s ease; }
+
+        /* BUTON MATRİSİ */
+        .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+        
+        .calc-btn {
+            height: 68px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.12);
+            font-size: 1.4rem; font-weight: 500; color: #fff;
+            background: rgba(255, 255, 255, 0.05);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .calc-btn:active { transform: scale(0.9); background: rgba(255,255,255,0.18); }
+        
+        /* ÖZEL RENKLİ TUŞLAR */
+        .btn-operator { background: rgba(168, 85, 247, 0.2); border-color: rgba(168, 85, 247, 0.3); color: #c084fc; font-weight: 600; }
+        .btn-operator:active { background: rgba(168, 85, 247, 0.4); }
+        
+        .btn-equal { background: linear-gradient(135deg, #a855f7, #ec4899); border: none; font-weight: 700; box-shadow: 0 8px 20px rgba(236, 72, 153, 0.3); }
+        .btn-equal:active { transform: scale(0.88); opacity: 0.9; }
+
+        .btn-clear { color: #f43f5e; background: rgba(244, 63, 94, 0.1); border-color: rgba(244, 63, 94, 0.2); }
+
+        /* YAN GEÇMİŞ LİSTESİ PANELİ (FLOW CLOUD HISTORY) */
+        .history-sidebar {
+            position: absolute; top: 0; left: -320px; width: 300px; height: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border-right: 1px solid rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(40px); -webkit-backdrop-filter: blur(40px);
+            z-index: 50; padding: 30px 20px;
+            display: flex; flex-direction: column; gap: 20px;
+            transition: left 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            box-shadow: 15px 0 45px rgba(0,0,0,0.15);
+        }
+        .history-sidebar.open { left: 0; }
+
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; }
+        .history-title { color: #fff; font-size: 1.1rem; font-weight: 600; letter-spacing: 0.5px; }
+        .clear-all-btn { font-size: 0.8rem; color: rgba(244, 63, 94, 0.8); cursor: pointer; font-weight: 500; padding: 4px 8px; border-radius: 8px; background: rgba(244, 63, 94, 0.1); transition: all 0.2s; }
+        .clear-all-btn:active { background: rgba(244, 63, 94, 0.25); }
+
+        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-right: 4px; scrollbar-width: none; }
+        .history-list::-webkit-scrollbar { display: none; }
+        
+        .history-item {
+            background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 14px; padding: 12px; display: flex; justify-content: space-between; align-items: center;
+            animation: slideIn 0.3s ease forwards;
+        }
+        .history-item-body { display: flex; flex-direction: column; gap: 2px; flex: 1; cursor: pointer; }
+        .history-calc { font-size: 0.78rem; color: rgba(255,255,255,0.4); }
+        .history-res { font-size: 1.1rem; color: #fff; font-weight: 600; }
+        .delete-item-btn { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.3); font-size: 0.85rem; border-radius: 50%; cursor: pointer; transition: all 0.2s; }
+        .delete-item-btn:hover { color: #f43f5e; background: rgba(244,63,94,0.15); }
+
+        /* GEÇMİŞİ TETİKLEYEN LIQUID DOCK / BUTON */
+        .toggle-history-btn {
+            position: absolute; top: 25px; right: 25px; z-index: 100;
+            width: 40px; height: 40px; background: rgba(255, 255, 255, 0.08);
+            border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            display: flex; align-items: center; justify-content: center; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); transition: all 0.2s;
+        }
+        .toggle-history-btn:active { transform: scale(0.9); }
+        .toggle-history-btn svg { width: 18px; height: 18px; fill: #fff; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* MOBİL UYUMLULUK DÜZENLEMESİ */
+        @media(max-width: 400px) {
+            .calc-container { width: 92%; padding: 18px; }
+            .calc-btn { height: 62px; font-size: 1.3rem; }
+            .history-sidebar { width: 85%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="back-zone">
+        <div class="liquid-arrow" onclick="window.location.href='anaekran.html'">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+    </div>
+
+    <div class="toggle-history-btn" onclick="toggleSidebar(event)">
+        <svg viewBox="0 0 24 24"><path d="M13 3c-4.97 0-9 4.03-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
+    </div>
+
+    <div class="history-sidebar" id="historySidebar">
+        <div class="history-header">
+            <span class="history-title">Flow calculator Hafızası</span>
+            <span class="clear-all-btn" onclick="clearAllHistory()">Tümünü Sil</span>
+        </div>
+        <div class="history-list" id="historyList">
+            </div>
+    </div>
+
+    <div class="calc-container" id="calcContainer">
+        <div class="calc-screen">
+            <div class="screen-history" id="screenHistory"></div>
+            <div class="screen-current" id="screenCurrent">0</div>
+        </div>
+
+        <div class="calc-grid">
+            <div class="calc-btn btn-clear" onclick="clearScreen()">C</div>
+            <div class="calc-btn btn-operator" onclick="appendOperator('/')">÷</div>
+            <div class="calc-btn btn-operator" onclick="appendOperator('*')">×</div>
+            <div class="calc-btn btn-operator" onclick="deleteLast()">⌫</div>
+
+            <div class="calc-btn" onclick="appendNumber('7')">7</div>
+            <div class="calc-btn" onclick="appendNumber('8')">8</div>
+            <div class="calc-btn" onclick="appendNumber('9')">9</div>
+            <div class="calc-btn btn-operator" onclick="appendOperator('-')">-</div>
+
+            <div class="calc-btn" onclick="appendNumber('4')">4</div>
+            <div class="calc-btn" onclick="appendNumber('5')">5</div>
+            <div class="calc-btn" onclick="appendNumber('6')">6</div>
+            <div class="calc-btn btn-operator" onclick="appendOperator('+')">+</div>
+
+            <div class="calc-btn" onclick="appendNumber('1')">1</div>
+            <div class="calc-btn" onclick="appendNumber('2')">2</div>
+            <div class="calc-btn" onclick="appendNumber('3')">3</div>
+            <div class="calc-btn btn-equal" style="grid-row: span 2; height: auto;" onclick="calculateResult()">=</div>
+
+            <div class="calc-btn" style="grid-column: span 2;" onclick="appendNumber('0')">0</div>
+            <div class="calc-btn" onclick="appendNumber('.')">.</div>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = "0";
+        let expression = "";
+        let isResultDisplayed = false;
+        let historyData = JSON.parse(localStorage.getItem('calcHistory')) || [];
+
+        const screenCurrent = document.getElementById('screenCurrent');
+        const screenHistory = document.getElementById('screenHistory');
+        const historySidebar = document.getElementById('historySidebar');
+        const historyList = document.getElementById('historyList');
+        const calcContainer = document.getElementById('calcContainer');
+
+        function updateDisplay() {
+            screenCurrent.innerText = currentInput;
+            screenHistory.innerText = expression;
+            
+            // Büyük sayılarda font küçültme simülasyonu
+            if (currentInput.length > 8) {
+                screenCurrent.style.fontSize = "1.6rem";
+            } else {
+                screenCurrent.style.fontSize = "2.3rem";
+            }
+        }
+
+        function appendNumber(num) {
+            if (isResultDisplayed) {
+                currentInput = num;
+                isResultDisplayed = false;
+            } else {
+                if (currentInput === "0" && num !== ".") {
+                    currentInput = num;
+                } else {
+                    if (num === "." && currentInput.includes(".")) return;
+                    currentInput += num;
+                }
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (isResultDisplayed) isResultDisplayed = false;
+            
+            // Eğer son karakter operatörse ve yeni bir operatör giriliyorsa eskisini değiştir
+            if (["+", "-", "*", "/"].includes(expression.slice(-1)) && currentInput === "") {
+                expression = expression.slice(0, -1) + op;
+            } else {
+                expression += currentInput + op;
+                currentInput = "";
+            }
+            updateDisplay();
+        }
+
+        function clearScreen() {
+            currentInput = "0";
+            expression = "";
+            isResultDisplayed = false;
+            updateDisplay();
+        }
+
+        function deleteLast() {
+            if (currentInput.length > 1) {
+                currentInput = currentInput.slice(0, -1);
+            } else {
+                currentInput = "0";
+            }
+            updateDisplay();
+        }
+
+        function calculateResult() {
+            if (expression === "" && currentInput === "") return;
+            
+            let finalExpression = expression + currentInput;
+            // Güvenli eval işlemi için sanitize
+            let checkExpr = finalExpression.replace(/[^0-9\+\-\*\/\.]/g, '');
+            
+            try {
+                let result = eval(checkExpr);
+                if (result === undefined || isNaN(result)) return;
+
+                // Ondalık hassasiyet kontrolü
+                if (result % 1 !== 0) {
+                    result = parseFloat(result.toFixed(6));
+                }
+
+                // Geçmişe Kaydetme Mekanizması
+                saveToHistory(finalExpression.replace(/\*/g, '×').replace(/\//g, '÷'), result);
+
+                expression = "";
+                currentInput = String(result);
+                isResultDisplayed = true;
+                updateDisplay();
+            } catch (error) {
+                currentInput = "Hata";
+                updateDisplay();
+                setTimeout(clearScreen, 1500);
+            }
+        }
+
+        // GEÇMİŞ YÖNETİMİ
+        function saveToHistory(calc, res) {
+            const historyItem = { id: Date.now(), calc: calc, res: res };
+            historyData.unshift(historyItem);
+            localStorage.setItem('calcHistory', JSON.stringify(historyData));
+            renderHistory();
+        }
+
+        function renderHistory() {
+            historyList.innerHTML = "";
+            if (historyData.length === 0) {
+                historyList.innerHTML = `<div style="color:rgba(255,255,255,0.25); text-align:center; margin-top:40px; font-size:0.85rem;">Hafıza Boş</div>`;
+                return;
+            }
+
+            historyData.forEach(item => {
+                const div = document.createElement('div');
+                div.className = "history-item";
+                div.innerHTML = `
+                    <div class="history-item-body" onclick="loadHistoryItem('${item.res}')">
+                        <span class="history-calc">${item.calc}</span>
+                        <span class="history-res">${item.res}</span>
+                    </div>
+                    <div class="delete-item-btn" onclick="deleteHistoryItem(${item.id})">✕</div>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function deleteHistoryItem(id) {
+            historyData = historyData.filter(item => item.id !== id);
+            localStorage.setItem('calcHistory', JSON.stringify(historyData));
+            renderHistory();
+        }
+
+        function clearAllHistory() {
+            historyData = [];
+            localStorage.setItem('calcHistory', JSON.stringify(historyData));
+            renderHistory();
+        }
+
+        function loadHistoryItem(value) {
+            currentInput = value;
+            isResultDisplayed = true;
+            updateDisplay();
+            toggleSidebar(); // Hafızadan seçince paneli kapat
+        }
+
+        function toggleSidebar(e) {
+            if (e) e.stopPropagation();
+            historySidebar.classList.toggle('open');
+            
+            // Sidebar açıldığında hesap makinesini hafif sağa kaydırıp derinlik hissi verme
+            if (historySidebar.classList.contains('open')) {
+                if (window.innerWidth > 600) calcContainer.style.transform = "translateX(100px)";
+            } else {
+                calcContainer.style.transform = "none";
+            }
+        }
+
+        // Ekranın boş yerine basınca geçmiş menüsünü kapat
+        document.body.addEventListener('click', (e) => {
+            if (!e.target.closest('#historySidebar') && !e.target.closest('.toggle-history-btn')) {
+                historySidebar.classList.remove('open');
+                calcContainer.style.transform = "none";
+            }
+        });
+
+        // Sayfa ilk yüklendiğinde geçmiş verisini ekrana bas
+        window.addEventListener('DOMContentLoaded', () => {
+            renderHistory();
+            updateDisplay();
+        });
+    </script>
+</body>
+</html>

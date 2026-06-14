@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Weather Max</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #ffffff;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background: #060609;
+            position: relative;
+        }
+
+        /* 🌊 AKIŞKAN SIVI LİKİT ARKA PLAN */
+        .liquid-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, #7209b7 0%, #3f37c9 50%, #4cc9f0 100%);
+            filter: blur(130px);
+            opacity: 0.2;
+            z-index: 1;
+            animation: liquidMovement 14s ease-in-out infinite alternate;
+            transition: background 1.2s ease;
+        }
+
+        @keyframes liquidMovement {
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); }
+            50% { transform: translate(4%, 6%) rotate(90deg) scale(1.05); }
+            100% { transform: translate(-4%, -4%) rotate(180deg) scale(0.95); }
+        }
+
+        /* GERİ OKU */
+        .back-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 50%;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            font-size: 1.1rem;
+            z-index: 100;
+        }
+        .back-btn:active { transform: scale(0.9); background: rgba(255, 255, 255, 0.15); }
+
+        /* ANA SAYFA REAKSİYONLU KAYDIRMA ÇERÇEVESİ */
+        .view-wrapper {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            transition: transform 0.6s cubic-bezier(0.25, 1, 0.3, 1);
+            z-index: 5;
+            position: relative;
+        }
+
+        .view-section {
+            min-width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 85px 20px 100px 20px; 
+            overflow-y: auto;
+            scrollbar-width: none;
+        }
+        .view-section::-webkit-scrollbar { display: none; }
+
+        .container {
+            width: 100%;
+            max-width: 440px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        /* PREMIUM LIQUID GLASS ANA KART */
+        .main-card {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+            backdrop-filter: blur(35px) saturate(180%);
+            -webkit-backdrop-filter: blur(35px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 32px;
+            padding: 26px;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.4), inset 0 1px 2px rgba(255,255,255,0.25);
+            text-align: center;
+            width: 100%;
+        }
+
+        /* ARAMA MOTORU */
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 5px 6px 5px 16px;
+            margin-bottom: 22px;
+        }
+
+        .search-input {
+            width: 100%;
+            background: none;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .search-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 9px 16px;
+            border-radius: 14px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .location { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+        .weather-desc { font-size: 0.85rem; color: rgba(255, 255, 255, 0.5); text-transform: uppercase; letter-spacing: 0.8px; margin-top: 3px; font-weight: 600; }
+        
+        .temp-display {
+            font-size: 5.2rem;
+            font-weight: 200;
+            letter-spacing: -3px;
+            margin: 10px 0;
+            position: relative;
+            display: inline-block;
+        }
+        .temp-display span { font-size: 2.2rem; position: absolute; top: 12px; right: -25px; font-weight: 300; }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            padding: 14px;
+            margin-top: 10px;
+        }
+        .stat-item { display: flex; flex-direction: column; gap: 3px; }
+        .stat-label { font-size: 0.65rem; color: rgba(255, 255, 255, 0.4); text-transform: uppercase; font-weight: 700; }
+        .stat-value { font-size: 0.9rem; font-weight: 600; }
+
+        /* 🕐 SAATLİK TAHMİN AKIŞI */
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-left: 6px;
+            color: rgba(255, 255, 255, 0.8);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+            scrollbar-width: none;
+            width: 100%;
+        }
+        .hourly-scroll::-webkit-scrollbar { display: none; }
+
+        .hourly-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            min-width: 85px;
+            padding: 12px 6px;
+            border-radius: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+        }
+        .hourly-time { font-size: 0.75rem; color: rgba(255, 255, 255, 0.5); font-weight: 600; }
+        .hourly-temp { font-size: 1rem; font-weight: 700; }
+        .hourly-desc { font-size: 0.65rem; color: rgba(255, 255, 255, 0.7); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 75px; }
+
+        /* 📅 GÜNLÜK RAPOR LİSTESİ */
+        .forecast-list { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+
+        .forecast-item {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.06) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 20px;
+            padding: 18px 22px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .forecast-date { font-weight: 600; font-size: 0.95rem; width: 100px; text-align: left; }
+        .forecast-desc { font-size: 0.85rem; color: rgba(255, 255, 255, 0.6); flex: 1; text-align: left; padding-left: 5px; }
+        .forecast-temps { display: flex; gap: 10px; font-size: 0.95rem; font-weight: 600; }
+        .temp-min { color: rgba(255, 255, 255, 0.4); }
+
+        /* 🎛️ PREMIUM LIQUID GLASS SÜRGÜ / DOCK YAPISI */
+        .bottom-dock-container {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 168px; 
+            height: 58px;
+            border-radius: 29px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.03) 100%);
+            backdrop-filter: blur(30px) saturate(170%);
+            -webkit-backdrop-filter: blur(30px) saturate(170%);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.15);
+            display: flex;
+            align-items: center;
+            padding: 5px; 
+            z-index: 100;
+            touch-action: none;
+            overflow: hidden; 
+        }
+
+        /* AKICI JELLY SIVI KATMAN */
+        .liquid-pill {
+            position: absolute;
+            left: 5px;
+            width: 72px;
+            height: 48px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            transform-origin: center center;
+            will-change: left, width, transform;
+        }
+
+        .dock-tab-mesh {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 5;
+            padding: 0 4px;
+        }
+
+        .dock-tab {
+            width: 72px;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: rgba(255, 255, 255, 0.4);
+            transition: color 0.3s ease;
+        }
+
+        .dock-tab svg {
+            width: 22px;
+            height: 22px;
+            fill: currentColor;
+            pointer-events: none;
+        }
+
+        .dock-tab.active { color: #ffffff; }
+
+        .loader {
+            display: none;
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #00f2fe;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 30px auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg" id="dynamicGlow"></div>
+
+    <a href="anaekran.html" class="back-btn">✕</a>
+
+    <div class="view-wrapper" id="view-wrapper">
+        
+        <section class="view-section">
+            <div class="container">
+                <div class="main-card">
+                    <div class="search-box">
+                        <input type="text" id="cityInput" class="search-input" placeholder="Şehir arayın..." value="Istanbul">
+                        <button class="search-btn" onclick="fetchMaxWeather()">Ara</button>
+                    </div>
+
+                    <div class="loader" id="weatherLoader"></div>
+
+                    <div id="todayContent">
+                        <div class="location" id="cityName">Yükleniyor...</div>
+                        <div class="weather-desc" id="todayCondition">---</div>
+                        
+                        <div class="temp-display" id="todayTemp">0<span>°</span></div>
+                        
+                        <div class="stats-row">
+                            <div class="stat-item">
+                                <span class="stat-label">Rüzgar</span>
+                                <span class="stat-value" id="windSpeed">-- km/h</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Nem</span>
+                                <span class="stat-value" id="humidity">--%</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Hissedilen</span>
+                                <span class="stat-value" id="feelsLike">--°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-title">Bugün Saatlik Akış</div>
+                <div class="hourly-scroll" id="hourlyContainer">
+                    </div>
+            </div>
+        </section>
+
+        <section class="view-section">
+            <div class="container">
+                <div class="section-title" style="margin-bottom: 5px;">Günlük Rapor</div>
+                <div class="forecast-list" id="forecastContainer">
+                    </div>
+            </div>
+        </section>
+
+    </div>
+
+    <div class="bottom-dock-container" id="jelly-dock">
+        <div class="liquid-pill" id="liquid-pill"></div>
+        
+        <div class="dock-tab-mesh">
+            <div class="dock-tab active" id="tab-0" data-idx="0">
+                <svg viewBox="0 0 24 24">
+                    <path d="M8.25 11.25a3.75 3.75 0 1 1 3.75-3.75 3.75 3.75 0 0 1-3.75 3.75zm0-6a2.25 2.25 0 1 0 2.25 2.25 2.25 2.25 0 0 0-2.25-2.25zM19.14 15.31A4.86 4.86 0 0 0 14.25 10.5a4.93 4.93 0 0 0-1.81.35 6 6 0 0 0-10.44 4A5.63 5.63 0 0 0 7.63 20.5h11A4.13 4.13 0 0 0 22.75 16.37a4.07 4.07 0 0 0-3.61-4.06zm-11.51 3.69a4.13 4.13 0 0 1-4.13-4.13 4.41 4.41 0 0 1 3.84-4.35l.48-.06.18-.45a4.49 4.49 0 0 1 8.35 1.54l.08.57.57.07a2.63 2.63 0 0 1 .45 5.19 1.15 1.15 0 0 1-.35.07h-11z"/>
+                </svg>
+            </div>
+
+            <div class="dock-tab" id="tab-1" data-idx="1">
+                <svg viewBox="0 0 24 24">
+                    <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const weatherTranslations = {
+            "Clear": "Açık Gökyüzü", "Sunny": "Güneşli", "Partly cloudy": "Parçalı Bulutlu",
+            "Cloudy": "Bulutlu", "Overcast": "Kapalı Hava", "Mist": "Puslu", 
+            "Patchy rain nearby": "Yakınlarda Yağış", "Light rain": "Hafif Yağmurlu",
+            "Heavy rain": "Şiddetli Yağmurlu", "Thunderstorm": "Gök Gürültülü Fırtına",
+            "Snow": "Karlı", "Light snow": "Hafif Karlı", "Fog": "Sisli",
+            "Light rain shower": "Hafif Yağmurlu"
+        };
+
+        const dayTranslations = {
+            "Monday": "Pazartesi", "Tuesday": "Salı", "Wednesday": "Çarşamba",
+            "Thursday": "Perşembe", "Friday": "Cuma", "Saturday": "Cumartesi", "Sunday": "Pazar"
+        };
+
+        async function fetchMaxWeather() {
+            const city = document.getElementById('cityInput').value.trim();
+            if (!city) return;
+
+            const todayContent = document.getElementById('todayContent');
+            const loader = document.getElementById('weatherLoader');
+            const forecastContainer = document.getElementById('forecastContainer');
+            const hourlyContainer = document.getElementById('hourlyContainer');
+            const glow = document.getElementById('dynamicGlow');
+
+            todayContent.style.opacity = '0.2';
+            forecastContainer.style.opacity = '0.2';
+            hourlyContainer.style.opacity = '0.2';
+            loader.style.display = 'block';
+
+            try {
+                const response = await fetch(`https://wttr.in/${encodeURIComponent(city)}?format=j1`);
+                if (!response.ok) throw new Error();
+                const data = await response.json();
+
+                const current = data.current_condition[0];
+                const area = data.nearest_area[0];
+                const rawDesc = current.weatherDesc[0].value;
+                const feelsLikeValue = current.FeelsLikeC || current.feelsLike_C || current.temp_C;
+
+                document.getElementById('cityName').innerText = area.areaName[0].value + ", " + area.country[0].value;
+                document.getElementById('todayCondition').innerText = weatherTranslations[rawDesc] || rawDesc;
+                document.getElementById('todayTemp').innerHTML = `${current.temp_C}<span>°</span>`;
+                document.getElementById('windSpeed').innerText = `${current.windspeedKmph} km/h`;
+                document.getElementById('humidity').innerText = `%${current.humidity}`;
+                document.getElementById('feelsLike').innerText = `${feelsLikeValue}°`;
+
+                // HOUR MATRIX FLOW
+                hourlyContainer.innerHTML = '';
+                const todayHours = data.weather[0].hourly;
+                todayHours.forEach(hourData => {
+                    let timeClean = parseInt(hourData.time) / 100;
+                    timeClean = timeClean < 10 ? `0${timeClean}:00` : `${timeClean}:00`;
+                    if(timeClean === "00:00") timeClean = "24:00";
+
+                    const hTemp = hourData.tempC || hourData.temp_C; 
+                    const hDesc = hourData.weatherDesc[0].value;
+
+                    const hourItem = document.createElement('div');
+                    hourItem.className = 'hourly-item';
+                    hourItem.innerHTML = `
+                        <span class="hourly-time">${timeClean}</span>
+                        <span class="hourly-temp">${hTemp}°</span>
+                        <span class="hourly-desc">${weatherTranslations[hDesc] || hDesc}</span>
+                    `;
+                    hourlyContainer.appendChild(hourItem);
+                });
+
+                // FORECAST GENERATOR
+                forecastContainer.innerHTML = '';
+                const forecasts = data.weather;
+                forecasts.forEach(dayData => {
+                    const dateObj = new Date(dayData.date);
+                    const dayNameEnglish = dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+                    const dayNameTurkish = dayTranslations[dayNameEnglish] || dayNameEnglish;
+
+                    const maxTemp = dayData.maxtempC;
+                    const minTemp = dayData.mintempC;
+                    const dayDesc = dayData.hourly[4].weatherDesc[0].value; 
+
+                    const row = document.createElement('div');
+                    row.className = 'forecast-item';
+                    row.innerHTML = `
+                        <div class="forecast-date">${dayNameTurkish}</div>
+                        <div class="forecast-desc">${weatherTranslations[dayDesc] || dayDesc}</div>
+                        <div class="forecast-temps">
+                            <span class="temp-max">${maxTemp}°</span>
+                            <span class="temp-min">${minTemp}°</span>
+                        </div>
+                    `;
+                    forecastContainer.appendChild(row);
+                });
+
+                // GLOW MANAGEMENT
+                const descLower = rawDesc.toLowerCase();
+                if (descLower.includes("rain") || descLower.includes("mist") || descLower.includes("shower")) {
+                    glow.style.background = "linear-gradient(135deg, #102a43 0%, #0b1d33 50%, #243b55 100%)";
+                } else if (descLower.includes("snow") || descLower.includes("ice")) {
+                    glow.style.background = "linear-gradient(135deg, #adc1e6 0%, #e0eafc 50%, #cfd9df 100%)";
+                } else if (descLower.includes("sunny") || descLower.includes("clear")) {
+                    glow.style.background = "linear-gradient(135deg, #e65c00 0%, #f9d423 50%, #ff4e50 100%)";
+                } else {
+                    glow.style.background = "linear-gradient(135deg, #5118ac 0%, #2833c2 50%, #3ca7d2 100%)";
+                }
+
+            } catch (error) {
+                document.getElementById('cityName').innerText = "Hata!";
+                document.getElementById('todayCondition').innerText = "Veri okunamadı.";
+            } finally {
+                loader.style.display = 'none';
+                todayContent.style.opacity = '1';
+                forecastContainer.style.opacity = '1';
+                hourlyContainer.style.opacity = '1';
+            }
+        }
+
+        // TAŞMA KORUMALI JELLY DOCK DRIVER
+        const dock = document.getElementById('jelly-dock');
+        const pill = document.getElementById('liquid-pill');
+        const wrapper = document.getElementById('view-wrapper');
+        
+        let currentIdx = 0;
+        let isDragging = false;
+        let startX = 0;
+        let pillStartLeft = 5;
+        
+        const PAD = 5;
+        const PILL_WIDTH = 72;
+        const LEFT_POS = 5;
+        const RIGHT_POS = 91; 
+        const MAX_STRETCH = 30; 
+
+        function updateTabs(index) {
+            document.querySelectorAll('.dock-tab').forEach((tab, i) => {
+                if(i === index) tab.classList.add('active');
+                else tab.classList.remove('active');
+            });
+        }
+
+        function switchView(index) {
+            currentIdx = index;
+            wrapper.style.transform = `translateX(-${index * 100}%)`;
+            updateTabs(index);
+
+            pill.style.transition = "all 0.45s cubic-bezier(0.19, 1, 0.22, 1)";
+            pill.style.left = (index === 0 ? LEFT_POS : RIGHT_POS) + 'px';
+            pill.style.width = PILL_WIDTH + 'px';
+            pill.style.transform = "scaleY(1)";
+        }
+
+        function dragStart(e) {
+            isDragging = true;
+            pill.style.transition = "none";
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            startX = clientX;
+            pillStartLeft = currentIdx === 0 ? LEFT_POS : RIGHT_POS;
+        }
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            let deltaX = clientX - startX;
+            
+            let targetLeft = pillStartLeft + deltaX;
+            let stretch = Math.min(Math.abs(deltaX) * 0.35, MAX_STRETCH);
+            
+            if (deltaX > 0) {
+                let finalLeft = Math.max(LEFT_POS, Math.min(targetLeft, RIGHT_POS));
+                let finalWidth = PILL_WIDTH + stretch;
+                if (finalLeft + finalWidth > (168 - PAD)) {
+                    finalWidth = (168 - PAD) - finalLeft;
+                }
+                pill.style.left = finalLeft + 'px';
+                pill.style.width = finalWidth + 'px';
+                pill.style.transform = `scaleY(${1 - (stretch * 0.005)})`;
+            } else if (deltaX < 0) {
+                let finalLeft = targetLeft - stretch;
+                if (finalLeft < LEFT_POS) finalLeft = LEFT_POS;
+                let finalWidth = Math.min(PILL_WIDTH + stretch, RIGHT_POS + PILL_WIDTH - finalLeft);
+                
+                pill.style.left = finalLeft + 'px';
+                pill.style.width = finalWidth + 'px';
+                pill.style.transform = `scaleY(${1 - (stretch * 0.005)})`;
+            }
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            let currentLeft = parseFloat(pill.style.left);
+            let midPoint = (LEFT_POS + RIGHT_POS) / 2;
+            
+            if (currentLeft + (PILL_WIDTH / 2) > midPoint) {
+                switchView(1);
+            } else {
+                switchView(0);
+            }
+        }
+
+        document.querySelectorAll('.dock-tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const idx = parseInt(e.currentTarget.getAttribute('data-idx'));
+                switchView(idx);
+            });
+        });
+
+        dock.addEventListener('mousedown', dragStart);
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('mouseup', dragEnd);
+        dock.addEventListener('touchstart', dragStart, { passive: true });
+        window.addEventListener('touchmove', dragMove, { passive: false });
+        window.addEventListener('touchend', dragEnd);
+
+        window.addEventListener('DOMContentLoaded', fetchMaxWeather);
+    </script>
+</body>
+</html>

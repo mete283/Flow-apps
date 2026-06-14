@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Flow Notes</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            user-select: none; 
+            -webkit-tap-highlight-color: transparent; 
+        }
+        
+        body { 
+            height: 100vh; 
+            width: 100vw;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            position: relative;
+        }
+
+        /* Üst Bar */
+        .top-bar { 
+            padding: 25px 20px 10px 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+            color: white; 
+            position: relative;
+            z-index: 10;
+        }
+        .back-btn { 
+            width: 40px; 
+            height: 40px; 
+            background: rgba(255,255,255,0.15); 
+            border-radius: 14px; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            backdrop-filter: blur(10px); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            font-size: 1.2rem;
+        }
+
+        /* İçerik Alanı */
+        .content-wrapper { 
+            flex: 1; 
+            position: relative; 
+            padding: 20px; 
+            z-index: 5;
+            height: calc(100vh - 200px);
+        }
+        
+        .view { 
+            position: absolute; 
+            top: 0;
+            left: 20px;
+            right: 20px;
+            bottom: 100px; /* Alttaki buton ve sürgü alanına çarpmaması için güvenli pay */
+            transition: opacity 0.25s ease, visibility 0.25s; 
+        }
+        
+        .editor { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 15px; 
+        }
+        
+        input, textarea { 
+            background: rgba(255,255,255,0.1); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            padding: 15px; 
+            border-radius: 20px; 
+            color: white; 
+            outline: none; 
+            backdrop-filter: blur(10px); 
+            font-size: 1rem;
+        }
+        input::placeholder, textarea::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        textarea { 
+            flex: 1; 
+            resize: none; 
+        }
+        
+        /* Kaydet Butonu - Sürgünün hemen üzerinde temiz yerleşim */
+        .save-btn { 
+            background: rgba(255,255,255,0.2); 
+            border: 1px solid rgba(255,255,255,0.3); 
+            padding: 16px; 
+            border-radius: 20px; 
+            color: white; 
+            font-weight: 700; 
+            cursor: pointer; 
+            backdrop-filter: blur(10px); 
+            font-size: 1rem;
+            transition: background 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+        .save-btn:active {
+            background: rgba(255,255,255,0.35);
+        }
+        
+        /* Liste Görünümü */
+        .list-view { 
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch;
+        }
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-bottom: 20px;
+        }
+        .note-card { 
+            background: rgba(255,255,255,0.15); 
+            padding: 18px; 
+            border-radius: 22px; 
+            color: white; 
+            border: 1px solid rgba(255,255,255,0.2); 
+            cursor: pointer; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+        .note-info {
+            flex: 1;
+            padding-right: 15px;
+        }
+        .note-info strong {
+            display: block;
+            font-size: 1.05rem;
+            margin-bottom: 3px;
+        }
+        .note-info p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .del-btn {
+            background: rgba(255, 59, 48, 0.25);
+            border: 1px solid rgba(255, 59, 48, 0.4);
+            color: #ff453a;
+            padding: 8px 14px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(5px);
+        }
+
+        /* PREMIUM LIQUID GLASS DOCK / SÜRGÜ ALANI */
+        .dock-container {
+            position: absolute;
+            bottom: 30px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            pointer-events: none; /* Boşlukların alt katmana tıklatması için */
+        }
+        .dock { 
+            position: relative;
+            width: 230px; 
+            height: 56px; 
+            background: rgba(255,255,255,0.08); 
+            border-radius: 28px; 
+            display: flex; 
+            align-items: center; 
+            padding: 4px; 
+            backdrop-filter: blur(25px); 
+            border: 1px solid rgba(255,255,255,0.2); 
+            pointer-events: auto;
+        }
+        /* Gerçek Yarı Saydam Liquid Glass Top/Pill */
+        .pill { 
+            position: absolute; 
+            left: 4px; 
+            height: 46px; 
+            width: 108px; 
+            background: rgba(255, 255, 255, 0.25); 
+            border: 1px solid rgba(255, 255, 255, 0.35);
+            border-radius: 24px; 
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); 
+            transform-origin: center center;
+        }
+        .tab-mesh { 
+            display: flex; 
+            width: 100%; 
+            height: 100%;
+            z-index: 10; 
+        }
+        .dock-tab { 
+            flex: 1; 
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6); 
+            font-weight: 600; 
+            font-size: 0.95rem;
+            cursor: pointer; 
+            transition: color 0.3s ease;
+        }
+        .dock-tab.active {
+            color: #ffffff;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <div class="back-btn" onclick="window.location.href='anaekran.html'">←</div>
+        <h2 id="pageTitle">Notlar</h2>
+    </div>
+
+    <div class="content-wrapper">
+        <div id="view0" class="view editor">
+            <input type="text" id="noteTitle" placeholder="Başlık (Opsiyonel)...">
+            <textarea id="noteContent" placeholder="Notunuzu buraya yazın..."></textarea>
+            <button class="save-btn" onclick="saveNote()">Kaydet</button>
+        </div>
+        
+        <div id="view1" class="view list-view" style="display: none; opacity: 0;">
+            <div id="notesList" class="notes-list"></div>
+        </div>
+    </div>
+
+    <div class="dock-container">
+        <div class="dock" id="dock">
+            <div id="pill" class="pill"></div>
+            <div class="tab-mesh">
+                <div class="dock-tab active" data-idx="0">Notlar</div>
+                <div class="dock-tab" data-idx="1">Listele</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sürgü Alanı Sabitleri ve Değişkenleri (flowmanager.html algoritması)
+        const dock = document.getElementById('dock');
+        const pill = document.getElementById('pill');
+        const tabs = document.querySelectorAll('.dock-tab');
+        
+        const LEFT_POS = 4;
+        const RIGHT_POS = 114; 
+        const PILL_WIDTH = 108;
+        
+        let currentModeIdx = 0;
+        let isDragging = false;
+        let startX = 0;
+        let pillStartLeft = LEFT_POS;
+        let editingId = null;
+
+        // Sekme Değiştirme Fonksiyonu
+        function switchView(idx) {
+            currentModeIdx = idx;
+            
+            // Sekme yazı stillerini güncelle
+            tabs.forEach((t, i) => {
+                if(i === idx) t.classList.add('active');
+                else t.classList.remove('active');
+            });
+
+            // Sürgü animasyonu
+            pill.style.transition = "all 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)";
+            pill.style.left = (idx === 0 ? LEFT_POS : RIGHT_POS) + 'px';
+            pill.style.width = PILL_WIDTH + 'px';
+            pill.style.transform = "scaleY(1)";
+
+            // Görünüm ekran geçişleri
+            const v0 = document.getElementById('view0');
+            const v1 = document.getElementById('view1');
+
+            if (idx === 0) {
+                v0.style.display = "flex";
+                setTimeout(() => { v0.style.opacity = "1"; }, 10);
+                v1.style.opacity = "0";
+                v1.style.display = "none";
+            } else {
+                v1.style.display = "block";
+                setTimeout(() => { v1.style.opacity = "1"; }, 10);
+                v0.style.opacity = "0";
+                v0.style.display = "none";
+                renderNotes();
+            }
+        }
+
+        // SÜRGÜ SÜRÜKLEME VE LİQUİD GLASS ESNEME ALGORİTMASI
+        function dragStart(e) {
+            isDragging = true;
+            pill.style.transition = "none";
+            startX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            pillStartLeft = currentModeIdx === 0 ? LEFT_POS : RIGHT_POS;
+        }
+
+        function dragMove(e) {
+            if (!isDragging) return;
+            const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+            let deltaX = clientX - startX;
+            
+            let targetLeft = pillStartLeft + deltaX;
+            let finalLeft = Math.max(LEFT_POS, Math.min(targetLeft, RIGHT_POS));
+            
+            // Esneme (Sıvı Cam Efekti) Hesabı
+            let stretch = 0;
+            if (targetLeft < LEFT_POS) {
+                stretch = LEFT_POS - targetLeft;
+            } else if (targetLeft > RIGHT_POS) {
+                stretch = targetLeft - RIGHT_POS;
+            }
+            
+            let finalWidth = Math.min(PILL_WIDTH + stretch, RIGHT_POS + PILL_WIDTH - finalLeft);
+            
+            pill.style.left = finalLeft + 'px';
+            pill.style.width = finalWidth + 'px';
+            pill.style.transform = `scaleY(${1 - (stretch * 0.004)})`;
+        }
+
+        function dragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            
+            let currentLeft = parseFloat(pill.style.left);
+            let midPoint = (LEFT_POS + RIGHT_POS) / 2;
+            
+            if (currentLeft + (PILL_WIDTH / 2) > midPoint) {
+                switchView(1);
+            } else {
+                switchView(0);
+            }
+        }
+
+        // Tiklama Dinleyicileri
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                switchView(parseInt(e.currentTarget.getAttribute('data-idx')));
+            });
+        });
+
+        // Sürgü Event Atamaları
+        dock.addEventListener('mousedown', dragStart);
+        window.addEventListener('mousemove', dragMove);
+        window.addEventListener('mouseup', dragEnd);
+        dock.addEventListener('touchstart', dragStart, { passive: true });
+        window.addEventListener('touchmove', dragMove, { passive: false });
+        window.addEventListener('touchend', dragEnd);
+
+
+        // NOT KAYDETME VE DÜZENLEME MANTIĞI
+        function saveNote() {
+            const titleInput = document.getElementById('noteTitle');
+            const contentInput = document.getElementById('noteContent');
+            
+            // Başlık yoksa ama içerik varsa "Başlıksız Not" yap, ikisi de boşsa kaydetme
+            if (!contentInput.value.trim() && !titleInput.value.trim()) return;
+            
+            const title = titleInput.value.trim() || "Başlıksız Not";
+            const content = contentInput.value;
+            
+            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            
+            if (editingId !== null) {
+                // Mevcut notu düzenleme modu
+                notes = notes.map(n => n.id === editingId ? { id: editingId, title, content } : n);
+                editingId = null;
+            } else {
+                // Sıfırdan yeni not ekleme modu
+                notes.push({ id: Date.now(), title, content });
+            }
+            
+            localStorage.setItem('notes', JSON.stringify(notes));
+            
+            // Formu sıfırla ve listeye akıcı geçiş yap
+            titleInput.value = '';
+            contentInput.value = '';
+            switchView(1);
+        }
+
+        function editNote(id) {
+            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            let note = notes.find(n => n.id === id);
+            if (note) {
+                document.getElementById('noteTitle').value = note.title === "Başlıksız Not" ? "" : note.title;
+                document.getElementById('noteContent').value = note.content;
+                editingId = id;
+                switchView(0); // Yazma ekranına geri dön
+            }
+        }
+
+        function renderNotes() {
+            const list = document.getElementById('notesList');
+            list.innerHTML = '';
+            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            
+            if(notes.length === 0) {
+                list.innerHTML = `<div style="text-align:center; color:rgba(255,255,255,0.4); margin-top:30px; font-size:0.9rem;">Henüz kayıtlı not yok.</div>`;
+                return;
+            }
+
+            notes.forEach(note => {
+                const card = document.createElement('div');
+                card.className = 'note-card';
+                card.onclick = () => editNote(note.id); // Karta basınca düzenleme açılır
+                
+                // İçeriğin ilk satırını veya kısa halini önizleme yap
+                let preview = note.content ? note.content.substring(0, 35) : "İçerik boş";
+                if(note.content && note.content.length > 35) preview += "...";
+
+                card.innerHTML = `
+                    <div class="note-info">
+                        <strong>${note.title}</strong>
+                        <p>${preview}</p>
+                    </div>
+                    <button class="del-btn" onclick="event.stopPropagation(); deleteNote(${note.id})">Sil</button>
+                `;
+                list.appendChild(card);
+            });
+        }
+
+        function deleteNote(id) {
+            let notes = JSON.parse(localStorage.getItem('notes') || '[]');
+            notes = notes.filter(n => n.id !== id);
+            localStorage.setItem('notes', JSON.stringify(notes));
+            if(editingId === id) {
+                editingId = null;
+                document.getElementById('noteTitle').value = '';
+                document.getElementById('noteContent').value = '';
+            }
+            renderNotes();
+        }
+
+        // İlk açılış ayarı
+        switchView(0);
+    </script>
+</body>
+</html>

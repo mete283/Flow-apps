@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Cinematic Boot</title>
+    
+    
+    
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    
+    
+    <script>
+    // LocalStorage'dan ayarı kontrol et
+let settings = JSON.parse(localStorage.getItem('flowOS_Settings')) || { skipBoot: false };
+
+if (settings.skipBoot) {
+    window.location.href = 'kilit.html'; // Eğer Boot Atla açıksa direkt kilite git
+}
+    </script>
+    
+    
+    
+    
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000000; /* Tam Saf AMOLED Siyahı */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Sahne Alanı */
+        .stage-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* -----------------------------------------------------------
+           BİRİNCİ AŞAMA: LOGO VE FLOW AiOS
+           ----------------------------------------------------------- */
+        .first-phase {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 3;
+            animation: phaseOneExit 1s cubic-bezier(0.77, 0, 0.175, 1) 3.5s forwards;
+        }
+
+        .gemini-logo-container {
+            width: 55px;
+            height: 55px;
+            margin-bottom: 25px;
+            opacity: 0;
+            transform: translateY(-120px) rotate(-540deg) scale(0.4);
+            animation: rollInAndTilt 2s cubic-bezier(0.175, 0.885, 0.32, 1.1) forwards;
+        }
+
+        .gemini-svg {
+            width: 100%;
+            height: 100%;
+            fill: #ffffff;
+            animation: geminiMainSequence 5s infinite ease-in-out;
+            animation-delay: 2s;
+        }
+
+        .secondary-sparkle {
+            opacity: 0;
+            transform: scale(0);
+            transform-origin: 16px 17px;
+            animation: emergeSparkle 1.2s cubic-bezier(0.175, 0.885, 0.32, 1) 2s forwards;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transform: translateY(15px);
+            animation: fadeInUp 1s cubic-bezier(0.215, 0.61, 0.355, 1) 1.2s forwards;
+        }
+
+        .flow-text {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #ffffff;
+            margin-right: 6px;
+        }
+
+        .ai-text {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 0px;
+            background: linear-gradient(135deg, #00f2fe 0%, #0072ff 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 8px rgba(0, 114, 255, 0.3));
+        }
+
+        .os-text {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 1px;
+            opacity: 0;
+            display: inline-block;
+            margin-left: 0px; 
+            animation: 
+                osFadeIn 0.8s cubic-bezier(0.215, 0.61, 0.355, 1) 2.2s forwards, 
+                osColorLoop 8s infinite ease-in-out 3s;
+        }
+
+        /* -----------------------------------------------------------
+           İKİNCİ AŞAMA: LIQUID GLASS EDITION
+           ----------------------------------------------------------- */
+        .second-phase {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transform: translateY(40px) scale(0.95);
+            z-index: 2;
+            animation: 
+                phaseTwoEnter 1s cubic-bezier(0.165, 0.84, 0.44, 1) 4s forwards,
+                phaseTwoExit 1s cubic-bezier(0.77, 0, 0.175, 1) 6.5s forwards;
+        }
+
+        .edition-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .lg-title {
+            font-size: 0.9rem;
+            font-weight: 400;
+            letter-spacing: 7px;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
+        }
+
+        .edition-subtitle {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            background: linear-gradient(45deg, #00f2fe, #4285F4, #9B72CB, #00f2fe);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: editionColorShift 5s linear infinite;
+            filter: drop-shadow(0 2px 10px rgba(155, 114, 203, 0.2));
+        }
+
+        /* -----------------------------------------------------------
+           ÜÇÜNCÜ AŞAMA: GERÇEKÇİ SAF BEYAZ "M" İMZASI
+           ----------------------------------------------------------- */
+        .third-phase {
+            position: absolute;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1;
+            opacity: 0;
+            animation: phaseThreeEnter 0.8s ease-out 7s forwards;
+        }
+
+        .signature-svg {
+            width: 280px;
+            height: 140px;
+        }
+
+        /* Gerçek mürekkepli kalem kıvamında, estetik beyaz imza yolu */
+        .signature-path {
+            stroke: #ffffff; /* Tam asil saf beyaz */
+            stroke-width: 2.5;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+            stroke-dasharray: 1500;
+            stroke-dashoffset: 1500;
+            animation: writeSignature 2.6s cubic-bezier(0.3, 0.08, 0.25, 1) 7.2s forwards,
+                       signatureGlow 2.5s ease-in-out infinite alternate;
+        }
+
+        /* -----------------------------------------------------------
+           SABİT ALT KISIM VE 3 NOKTA LOADER
+           ----------------------------------------------------------- */
+        .footer-credits {
+            position: absolute;
+            bottom: 8vh;
+            left: 0;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            z-index: 4;
+            opacity: 0;
+            transform: translateY(10px);
+            animation: fadeInUp 1.2s cubic-bezier(0.215, 0.61, 0.355, 1) 1.5s forwards;
+        }
+
+        .powered-by {
+            font-size: 0.8rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.3);
+            text-transform: uppercase;
+        }
+
+        .powered-by span {
+            font-weight: 700;
+            background: linear-gradient(45deg, #4285F4, #9B72CB, #D96570, #4285F4);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: geminiTextGradient 4s linear infinite;
+        }
+
+        .dot-loader {
+            display: flex;
+            gap: 7px;
+        }
+
+        .dot {
+            width: 5px;
+            height: 5px;
+            background-color: #00f2fe;
+            border-radius: 50%;
+            opacity: 0.15;
+            animation: dotBlink 1.2s infinite both;
+        }
+
+        .dot:nth-child(2) { animation-delay: 0.2s; }
+        .dot:nth-child(3) { animation-delay: 0.4s; }
+
+        /* -----------------------------------------------------------
+           ANİMASYON KÜTÜPHANESİ
+           ----------------------------------------------------------- */
+        
+        @keyframes rollInAndTilt {
+            0% { opacity: 0; transform: translateY(-120px) rotate(-540deg) scale(0.4); }
+            65% { opacity: 1; transform: translateY(8px) rotate(20deg) scale(1.05); }
+            100% { opacity: 1; transform: translateY(0) rotate(15deg) scale(1); }
+        }
+
+        @keyframes emergeSparkle {
+            0% { opacity: 0; transform: scale(0); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes geminiMainSequence {
+            0%, 100% { fill: #ffffff; filter: drop-shadow(0 0 10px rgba(255,255,255,0.4)); }
+            25% { fill: #4285F4; filter: drop-shadow(0 0 15px rgba(66,133,244,0.5)); }
+            50% { fill: #9B72CB; filter: drop-shadow(0 0 15px rgba(155,114,203,0.5)); }
+            75% { fill: #00f2fe; filter: drop-shadow(0 0 15px rgba(0,242,254,0.5)); }
+        }
+
+        @keyframes osFadeIn {
+            0% { opacity: 0; transform: scale(0.9); color: #ffffff; }
+            100% { opacity: 1; transform: scale(1); color: #00f2fe; }
+        }
+
+        @keyframes osColorLoop {
+            0%, 100% { color: #00f2fe; text-shadow: 0 0 10px rgba(0,242,254,0.4); }
+            33% { color: #9B72CB; text-shadow: 0 0 12px rgba(155,114,203,0.4); }
+            66% { color: #d4af37; text-shadow: 0 0 12px rgba(212,175,55,0.4); }
+        }
+
+        /* Sahne Geçişleri */
+        @keyframes phaseOneExit { to { opacity: 0; transform: translateY(-60px) scale(0.9); } }
+        @keyframes phaseTwoEnter { to { opacity: 1; transform: translateY(0) scale(1); } }
+        @keyframes phaseTwoExit { to { opacity: 0; transform: translateY(-50px) scale(0.95); } }
+        @keyframes phaseThreeEnter { to { opacity: 1; } }
+
+        /* El Yazısı Çizim Efekti */
+        @keyframes writeSignature {
+            to { stroke-dashoffset: 0; }
+        }
+
+        /* Beyaz İmzanın Premium Hafif Aura Parlaması */
+        @keyframes signatureGlow {
+            0% { filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.2)); }
+            100% { filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6)); }
+        }
+
+        @keyframes editionColorShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes geminiTextGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes dotBlink {
+            0%, 100% { opacity: 0.15; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.25); background-color: #00f2fe; }
+        }
+
+        @keyframes fadeInUp { to { opacity: 1; transform: translateY(0); } }
+
+        .fade-out-active {
+            transition: opacity 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            opacity: 0 !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="stage-container">
+        
+        <!-- 1. AŞAMA: Giriş ve FLOW AiOS -->
+        <div class="first-phase">
+            <div class="gemini-logo-container">
+                <svg class="gemini-svg" viewBox="0 0 24 24">
+                    <path d="M12 2c-.3 0-.5.1-.7.3L9.6 6.1 6.1 7.3c-.5.2-.7.7-.5 1.2.1.2.3.4.5.5l3.5 1.2 1.7 3.8c.2.5.7.7 1.2.5.2-.1.4-.3.5-.5l1.2-3.5 3.5-1.2c.5-.2.7-.7.5-1.2-.1-.2-.3-.4-.5-.5l-3.5-1.2-1.2-3.5c-.1-.2-.4-.3-.7-.3z"/>
+                    <path class="secondary-sparkle" d="M16.5 13.5c-.1 0-.2.1-.3.1l-.5 1.4-1.4.5c-.2.1-.3.3-.2.5 0 .1.1.1.2.1l1.4.5.5 1.4c.1.2.3.3.5.2 0 0 .1-.1.1-.2l.5-1.4 1.4-.5c.2-.1.3-.3.2-.5 0-.1-.1-.1-.2-.1l-1.4-.5-.5-1.4c0 0-.1-.1-.2-.1z"/>
+                </svg>
+            </div>
+            <div class="brand-logo">
+                <span class="flow-text">FLOW</span>
+                <span class="ai-text">Ai</span>
+                <span class="os-text">OS</span>
+            </div>
+        </div>
+
+        <!-- 2. AŞAMA: Liquid Glass Edition -->
+        <div class="second-phase">
+            <div class="edition-card">
+                <span class="lg-title">Liquid Glass</span>
+                <span class="edition-subtitle">Edition</span>
+            </div>
+        </div>
+
+        <!-- 3. AŞAMA: Gerçekçi Atılan Estetik "M" İmza Sahnesi -->
+        <div class="third-phase">
+            <svg class="signature-svg" viewBox="0 0 200 100">
+                <!-- Sol alttan başlayıp dinamik bir M çizen, sağa ritmik akıp alttan şık bir çizgiyle dönen imza yolu -->
+                <path class="signature-path" d="M 25,75 C 22,50 32,22 36,18 C 42,12 45,68 49,70 C 53,72 65,28 70,32 C 76,36 72,62 82,58 C 92,54 94,44 102,46 C 110,48 106,60 114,56 C 124,50 128,38 136,44 C 146,52 142,66 156,58 C 168,50 178,42 185,45 M 50,84 C 90,83 140,78 178,72" />
+            </svg>
+        </div>
+
+    </div>
+
+    <!-- Alt Bilgiler ve Kesintisiz 3 Nokta Yükleyici -->
+    <div class="footer-credits">
+        <div class="powered-by">Powered by <span>Gemini</span></div>
+        
+        <div class="dot-loader">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // İmzanın ekranda net bir şekilde seçilmesi için 11.4. saniyede kararma tetiklenir
+            setTimeout(() => {
+                document.body.classList.add('fade-out-active');
+            }, 11400);
+
+            // 12.2. saniyede bir sonraki kilit.html ekranına pürüzsüz geçiş sağlanır
+            setTimeout(() => {
+                window.location.href = 'kilit.html';
+            }, 12200);
+        });
+    </script>
+    
+
+</body>
+</html>

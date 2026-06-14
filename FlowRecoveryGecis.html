@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>FRT Geçiş</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Plus Jakarta Sans', sans-serif; touch-action: none; user-select: none; }
+        
+        body {
+            width: 100%; height: 100vh;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            backdrop-filter: blur(40px) brightness(1.2); 
+            display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+            padding-bottom: 80px; overflow: hidden;
+        }
+
+        .top-left-header {
+            position: absolute; top: 30px; left: 20px;
+            display: flex; align-items: center; gap: 12px; color: #fff; cursor: pointer;
+        }
+
+        .liquid-arrow {
+            width: 40px; height: 40px;
+            background: rgba(255, 255, 255, 0.25);
+            border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.4);
+            display: flex; align-items: center; justify-content: center;
+            backdrop-filter: blur(15px);
+        }
+
+        /* SÜRÜKLEME BARI */
+        .slider-bar {
+            width: 300px; height: 65px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative; display: flex; align-items: center; padding: 0 5px;
+            backdrop-filter: blur(15px);
+        }
+
+        /* LIQUID GLASS KAPSÜL */
+        #knob {
+            width: 55px; height: 50px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 30px;
+            position: absolute; left: 5px;
+            transition: width 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.8);
+            display: flex; align-items: center; justify-content: center;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-left-header" onclick="window.location.href='anaekran.html'">
+        <div class="liquid-arrow">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+        </div>
+        <span style="font-weight: 700; letter-spacing: 0.5px;">Flow Recovery Tool</span>
+    </div>
+
+    <div class="slider-bar" id="sliderBar">
+        <div id="knob">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>
+        </div>
+    </div>
+
+    <script>
+        const knob = document.getElementById('knob');
+        const bar = document.getElementById('sliderBar');
+        let isDragging = false;
+        const maxPos = 240; // Kapsülün gidebileceği son nokta
+
+        function move(e) {
+            if (!isDragging) return;
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            let barRect = bar.getBoundingClientRect();
+            let newPos = clientX - barRect.left - 30;
+
+            // Taşmayı engelle ve sınırla
+            if (newPos < 5) newPos = 5;
+            if (newPos > maxPos) newPos = maxPos;
+
+            knob.style.left = newPos + 'px';
+            knob.style.width = "85px";
+
+            // Eğer sona ulaştıysa yönlendir
+            if (newPos >= maxPos) {
+                window.location.href = 'FlowRecovery.html';
+            }
+        }
+
+        knob.addEventListener('mousedown', () => isDragging = true);
+        knob.addEventListener('touchstart', () => isDragging = true);
+        window.addEventListener('mousemove', move);
+        window.addEventListener('touchmove', move);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchend', endDrag);
+
+        function endDrag() {
+            isDragging = false;
+            knob.style.left = "5px"; 
+            knob.style.width = "55px";
+        }
+    </script>
+</body>
+</html>

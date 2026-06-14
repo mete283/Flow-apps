@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Kilit Ekranı</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    
+    
+ <script>   
+    // LocalStorage'dan ayarı kontrol et
+let settings = JSON.parse(localStorage.getItem('flowOS_Settings')) || { directHome: false };
+
+if (settings.directHome) {
+    window.location.href = 'anaekran.html'; // Eğer Doğrudan Ana Ekran açıksa her şeyi atla
+}
+ </script>  
+    
+    
+    
+    
+    <style>
+        /* -----------------------------------------------------------
+           1. TEMEL SIFIRLAMA VE FONTLAR
+           ----------------------------------------------------------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
+        }
+
+        .home-screen-underlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            filter: blur(4px) brightness(0.8);
+            z-index: 1;
+        }
+
+        /* -----------------------------------------------------------
+           2. KİLİT EKRANI KONTEYNERI
+           ----------------------------------------------------------- */
+        #lock-screen-container {
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=1920') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 50px 20px 40px 20px;
+            z-index: 10;
+            cursor: grab;
+            transform: translateY(0);
+            will-change: transform, opacity;
+        }
+
+        #lock-screen-container.unlocked-animate {
+            transform: translateY(-100%) !important;
+            opacity: 0 !important;
+            transition: transform 0.5s cubic-bezier(0.15, 0.85, 0.35, 1), opacity 0.5s ease !important;
+        }
+
+        #lock-screen-container.snap-back {
+            transform: translateY(0) !important;
+            opacity: 1 !important;
+            transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease !important;
+        }
+
+        /* -----------------------------------------------------------
+           3. AYRIŞTIRILMIŞ VE ORALANMIŞ ZAMAN ALANI
+           ----------------------------------------------------------- */
+        .lock-time-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 13vh; /* Saat üstten daha zarif ve aşağıda durması için artırıldı */
+        }
+
+        /* Saat Alanı Kapsayıcısı */
+        .clock-box {
+            height: 390px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #lock-clock {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 11rem; 
+            font-weight: 500;
+            text-align: center;
+            
+            background: linear-gradient(180deg, 
+                rgba(255, 255, 255, 0.70) 0%, 
+                rgba(255, 255, 255, 0.15) 40%, 
+                rgba(255, 255, 255, 0.25) 65%, 
+                rgba(255, 255, 255, 0.75) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0px 12px 24px rgba(0, 0, 0, 0.4));
+            
+            /* Dikey Sıvı Cam Uzatması */
+            transform: scaleY(3.5); 
+            transform-origin: center;
+            display: inline-block;
+        }
+
+        /* Gün Alanı Kapsayıcısı */
+        .date-box {
+            margin-top: 20px; /* Saatin dikey büyüme alanına göre güvenli boşluk */
+            width: 100%;
+            text-align: center;
+        }
+
+        #lock-date {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.95rem;
+            font-weight: 600;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
+            display: block;
+        }
+
+        /* -----------------------------------------------------------
+           4. ALT KISIM İPUCU
+           ----------------------------------------------------------- */
+        .lock-bottom-hint {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .swipe-pill {
+            width: 150px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            animation: bouncePill 2s infinite ease-in-out;
+        }
+
+        .swipe-text {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: rgba(255, 255, 255, 0.75);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+        }
+
+        @keyframes bouncePill {
+            0%, 100% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(-6px); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    
+    
+    
+    
+ <!-- =================================================================
+     FLOW AiOS ULTRA MODULAR DYNAMIC ISLAND (RGB & AMOLED RENK GÜNCELLEMESİ)
+     ================================================================= -->
+
+<style>
+    /* MASTER CONTROLLER CONTAINER */
+    .dynamic-island-container {
+        position: fixed; 
+        left: 50%;
+        transform: translateX(-50%) scale(var(--island-scale, 1));
+        top: var(--island-top, 15px);
+        z-index: 999999;
+        pointer-events: auto;
+        display: none;
+        transform-origin: top center;
+    }
+
+    .dynamic-island {
+        width: 110px;
+        height: 30px;
+        background: #000000;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        transition: all var(--island-duration, 0.5s) cubic-bezier(0.19, 1, 0.22, 1);
+        color: white;
+        padding: 0 14px;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .dynamic-island.expanded {
+        width: 300px;
+        height: 75px;
+        border-radius: 24px;
+        border-color: rgba(255, 255, 255, 0.15);
+    }
+
+    /* Buglı olan iç dönen renkler (.dynamic-island::before) tamamen kaldırıldı! */
+    
+    /* Alttan Hafif Aydınlatma Efekt Sınıfları (Yazıya Göre Dinamik Değişir) */
+    .dynamic-island.glow-welcome.expanded {
+        box-shadow: 0 4px 15px rgba(0, 242, 254, 0.3), 0 15px 35px rgba(0, 0, 0, 0.8);
+        border-bottom: 2px solid rgba(0, 242, 254, 0.6);
+    }
+    
+    .dynamic-island.glow-system.expanded {
+        box-shadow: 0 4px 15px rgba(155, 93, 229, 0.35), 0 15px 35px rgba(0, 0, 0, 0.8);
+        border-bottom: 2px solid rgba(155, 93, 229, 0.6);
+    }
+    
+    .dynamic-island.glow-security.expanded {
+        box-shadow: 0 4px 15px rgba(255, 59, 48, 0.35), 0 15px 35px rgba(0, 0, 0, 0.8);
+        border-bottom: 2px solid rgba(255, 59, 48, 0.6);
+    }
+    
+    .dynamic-island.glow-time.expanded {
+        box-shadow: 0 4px 15px rgba(255, 149, 0, 0.35), 0 15px 35px rgba(0, 0, 0, 0.8);
+        border-bottom: 2px solid rgba(255, 149, 0, 0.6);
+    }
+    
+    .dynamic-island.glow-custom.expanded {
+        box-shadow: 0 4px 15px rgba(76, 217, 100, 0.35), 0 15px 35px rgba(0, 0, 0, 0.8);
+        border-bottom: 2px solid rgba(76, 217, 100, 0.6);
+    }
+
+    /* MOTION BLUR MODU */
+    .dynamic-island.mode-blur {
+        backdrop-filter: blur(25px) saturate(180%);
+        -webkit-backdrop-filter: blur(25px) saturate(180%);
+        background: rgba(10, 10, 15, 0.65) !important;
+        border: 1px solid rgba(255, 255, 255, 0.22) !important;
+    }
+
+    /* SAF AMOLED MODU */
+    .dynamic-island.mode-pure {
+        background: #000000 !important;
+    }
+
+    /* İçerik Katmanı */
+    .island-content {
+        position: relative;
+        z-index: 5; 
+        display: flex;
+        align-items: center;
+        width: 100%;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+        white-space: normal;
+        padding: 4px;
+    }
+
+    .dynamic-island.expanded .island-content { opacity: 1; }
+    #islandMessage { font-size: 0.75rem; font-weight: 500; line-height: 1.4; color: #ffffff; }
+</style>
+
+<script>
+    window.addEventListener('DOMContentLoaded', () => {
+        if (!document.getElementById('mainIsland')) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'dynamic-island-container';
+            wrapper.id = 'islandWrapper';
+            wrapper.innerHTML = `
+                <div class="dynamic-island" id="mainIsland">
+                    <div class="island-content">
+                        <span id="islandMessage">İletişim hattı hazır...</span>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(wrapper);
+        }
+
+        if (!document.getElementById('aiBrainBridge')) {
+            const bridge = document.createElement('iframe');
+            bridge.id = 'aiBrainBridge';
+            bridge.src = 'dinamik.html';
+            bridge.style.display = 'none'; 
+            document.body.appendChild(bridge);
+        }
+        
+        startModularIslandEngine();
+    });
+
+    function startModularIslandEngine() {
+        const wrapper = document.getElementById('islandWrapper');
+        const mainIsland = document.getElementById('mainIsland');
+        const islandMessage = document.getElementById('islandMessage');
+
+        function applyLiveConfig() {
+            const config = JSON.parse(localStorage.getItem('flowIslandSettings')) || {
+                visible: true, openOnStartup: true, visualMode: 'rgb', topPos: 15, scale: 100, duration: 5
+            };
+
+            if (!wrapper || !mainIsland) return config;
+
+            wrapper.style.display = config.visible ? 'block' : 'none';
+
+            // CSS Değişken Enjeksiyonu
+            document.documentElement.style.setProperty('--island-top', config.topPos + 'px');
+            document.documentElement.style.setProperty('--island-scale', (config.scale / 100));
+            document.documentElement.style.setProperty('--island-duration', (config.duration / 10) + 's');
+
+            // Temizleme ve Yeni Dinamik Sınıfları Ekleme
+            mainIsland.classList.remove('mode-rgb', 'mode-blur', 'mode-pure');
+            mainIsland.classList.add('mode-' + config.visualMode);
+
+            return config;
+        }
+
+        const currentConfig = applyLiveConfig();
+
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'flowIslandSettings') applyLiveConfig();
+        });
+
+        window.addEventListener("message", (event) => {
+            if (event.data && event.data.type === "AI_INSIGHT_RESPONSE") {
+                if (islandMessage) islandMessage.innerHTML = event.data.data.html;
+                
+                if (mainIsland) {
+                    // Eski aydınlatma sınıflarını temizle
+                    mainIsland.classList.remove('glow-welcome', 'glow-system', 'glow-security', 'glow-time', 'glow-custom');
+                    
+                    // Gelen içerik türüne göre alttan aydınlatma sınıfını ata
+                    mainIsland.classList.add('glow-' + event.data.data.glowType);
+                    mainIsland.classList.add('expanded');
+                }
+            }
+        });
+
+        function requestInsight(modeName) {
+            const brain = document.getElementById('aiBrainBridge');
+            if (brain && brain.contentWindow) {
+                brain.contentWindow.postMessage({ type: "REQUEST_AI_INSIGHT", mode: modeName }, "*");
+            }
+        }
+
+        if (mainIsland) {
+            mainIsland.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (mainIsland.classList.contains('expanded')) {
+                    mainIsland.classList.remove('expanded');
+                } else {
+                    requestInsight('click');
+                }
+            });
+        }
+
+        document.body.addEventListener('click', (e) => {
+            if (mainIsland && mainIsland.classList.contains('expanded') && !e.target.closest('.dynamic-island')) {
+                mainIsland.classList.remove('expanded');
+            }
+        });
+
+        if (currentConfig.visible && currentConfig.openOnStartup) {
+            setTimeout(() => {
+                if (mainIsland && !mainIsland.classList.contains('expanded')) {
+                    requestInsight('welcome');
+                    setTimeout(() => {
+                        if (mainIsland) mainIsland.classList.remove('expanded');
+                    }, 4500);
+                }
+            }, 1000);
+        }
+    }
+</script>
+
+    
+    
+    
+    
+    <div class="home-screen-underlay"></div>
+
+    <div id="lock-screen-container">
+        <div class="lock-time-wrapper">
+            <div class="clock-box">
+                <div id="lock-clock">00:00</div>
+            </div>
+            <div class="date-box">
+                <div id="lock-date">YÜKLENİYOR...</div>
+            </div>
+        </div>
+
+        <div class="lock-bottom-hint">
+            <div class="swipe-pill"></div>
+            <div class="swipe-text">Kilidi açmak için yukarı kaydırın</div>
+        </div>
+    </div>
+
+    <script>
+        const lockScreen = document.getElementById('lock-screen-container');
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let aodTimer;
+        const screenHeight = window.innerHeight;
+
+        function runLockScreenClock() {
+            const now = new Date();
+            let hours = now.getHours().toString().padStart(2, '0');
+            let minutes = now.getMinutes().toString().padStart(2, '0');
+            document.getElementById('lock-clock').innerText = `${hours}:${minutes}`;
+
+            const options = { weekday: 'long', day: 'numeric', month: 'long' };
+            let dateString = now.toLocaleDateString('tr-TR', options);
+            document.getElementById('lock-date').innerText = dateString;
+        }
+        setInterval(runLockScreenClock, 1000);
+        runLockScreenClock();
+
+        function unlockAndRedirect() {
+            lockScreen.className = ''; 
+            lockScreen.classList.add('unlocked-animate');
+            clearTimeout(aodTimer);
+            setTimeout(() => {
+                window.location.href = 'anaekran.html';
+            }, 500);
+        }
+
+        function snapBackToPosition() {
+            lockScreen.className = '';
+            lockScreen.classList.add('snap-back');
+            setTimeout(() => {
+                lockScreen.style.transform = '';
+                lockScreen.style.opacity = '';
+            }, 400);
+        }
+
+        function handleDragStart(yPosition) {
+            isDragging = true;
+            startY = yPosition;
+            lockScreen.classList.remove('snap-back', 'unlocked-animate');
+            lockScreen.style.transition = 'none'; 
+            resetAODTimer();
+        }
+
+        function handleDragMove(yPosition) {
+            if (!isDragging) return;
+            let deltaY = yPosition - startY;
+
+            if (deltaY < 0) {
+                currentY = deltaY;
+                let opacityRatio = 1 - (Math.abs(currentY) / (screenHeight * 0.65));
+                lockScreen.style.transform = `translateY(${currentY}px)`;
+                lockScreen.style.opacity = Math.max(opacityRatio, 0);
+            }
+        }
+
+        // Bırakıldığında devreye giren iOS pürüzsüz mekaniği
+        function handleDragEnd() {
+            if (!isDragging) return;
+            isDragging = false;
+            lockScreen.style.cursor = 'grab';
+
+            if (Math.abs(currentY) > screenHeight * 0.25) {
+                unlockAndRedirect();
+            } else {
+                snapBackToPosition();
+            }
+            currentY = 0;
+        }
+
+        lockScreen.addEventListener('touchstart', (e) => {
+            handleDragStart(e.touches[0].clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchmove', (e) => {
+            handleDragMove(e.touches[0].clientY);
+        }, { passive: true });
+
+        window.addEventListener('touchend', () => {
+            handleDragEnd();
+        });
+
+        lockScreen.addEventListener('mousedown', (e) => {
+            lockScreen.style.cursor = 'grabbing';
+            handleDragStart(e.clientY);
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            handleDragMove(e.clientY);
+        });
+
+        window.addEventListener('mouseup', () => {
+            handleDragEnd();
+        });
+
+        function resetAODTimer() {
+            clearTimeout(aodTimer);
+            aodTimer = setTimeout(() => {
+                window.location.href = 'aod.html';
+            }, 10000);
+        }
+
+        window.addEventListener('load', resetAODTimer);
+        window.addEventListener('keydown', resetAODTimer);
+
+        let lastTap = 0;
+        lockScreen.addEventListener('click', (e) => {
+            const currentTime = new Date().getTime();
+            const tapLength = currentTime - lastTap;
+            if (tapLength < 300 && tapLength > 0) {
+                window.location.href = 'aod.html';
+            }
+            lastTap = currentTime;
+        });
+    </script>
+    
+    
+    
+</body>
+</html>

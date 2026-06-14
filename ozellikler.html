@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Flow AiOS - Sistem Özellikleri</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background: #060609;
+            min-height: 100vh;
+            color: #ffffff;
+            padding: 25px 20px;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* 🌊 WHITE LIQUID GLASS ARKA PLAN */
+        .liquid-bg {
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.05) 0%, rgba(15, 23, 42, 0.4) 40%, #030712 80%);
+            z-index: -1;
+            filter: blur(80px);
+            animation: liquidMove 20s infinite alternate ease-in-out;
+        }
+
+        @keyframes liquidMove {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(5%, 8%) rotate(10deg); }
+        }
+
+        /* ÜST BAR */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            padding: 10px 18px;
+            border-radius: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(16px);
+            transition: all 0.2s;
+        }
+
+        .back-btn:active { transform: scale(0.95); }
+
+        .title h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* İÇERİK PANELİ */
+        .settings-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            max-width: 500px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 5;
+        }
+
+        /* BEYAZ CAM AYAR KARTI */
+        .setting-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 22px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            backdrop-filter: blur(25px) saturate(120%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4), inset 0 1px 2px rgba(255, 255, 255, 0.05);
+        }
+
+        .setting-info h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 3px;
+        }
+
+        .setting-info p {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.45);
+            line-height: 1.3;
+            max-width: 85%;
+        }
+
+        /* 🔘 PREMIUM SWITCH */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 28px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.08);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            top: 3px;
+            background-color: rgba(255, 255, 255, 0.8);
+            transition: .3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 50%;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        }
+
+        input:checked + .slider {
+            background-color: #ffffff;
+            border-color: #ffffff;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+            background-color: #060609;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="liquid-bg"></div>
+
+    <div class="header">
+        <button class="back-btn" onclick="location.href='anaekran.html'">← Geri</button>
+        <div class="title">
+            <h1>Sistem Özellikleri</h1>
+        </div>
+    </div>
+
+    <div class="settings-list">
+        <div class="setting-card">
+            <div class="setting-info">
+                <h2>Boot Ekranını Atla</h2>
+                <p>Açılış animasyonunu devre dışı bırakır ve kilit ekranına yönlendirir.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="skipboot-switch" onchange="toggleSetting('skipBoot', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="setting-card">
+            <div class="setting-info">
+                <h2>Doğrudan Ana Ekran</h2>
+                <p>Sistemi kilit ve boot ekranları olmadan ana ekranda başlatır.</p>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="directhome-switch" onchange="toggleSetting('directHome', this.checked)">
+                <span class="slider"></span>
+            </label>
+        </div>
+    </div>
+
+    <script>
+        // LocalStorage Ayar Kontrol Motoru
+        function getSettings() {
+            return JSON.parse(localStorage.getItem('flowOS_Settings')) || {
+                skipBoot: false,
+                directHome: false
+            };
+        }
+
+        function toggleSetting(key, value) {
+            let settings = getSettings();
+            settings[key] = value;
+            localStorage.setItem('flowOS_Settings', JSON.stringify(settings));
+        }
+
+        // Sayfa yüklendiğinde switch durumlarını eşitle
+        window.addEventListener('DOMContentLoaded', () => {
+            let settings = getSettings();
+            document.getElementById('skipboot-switch').checked = settings.skipBoot || false;
+            document.getElementById('directhome-switch').checked = settings.directHome || false;
+        });
+    </script>
+</body>
+</html>
